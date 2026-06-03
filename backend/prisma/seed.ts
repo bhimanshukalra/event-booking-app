@@ -1,7 +1,7 @@
 import "dotenv/config";
 import { PrismaPg } from "@prisma/adapter-pg";
-import { PrismaClient } from "../generated/prisma/client.js";
-import { EventStatus, UserRole } from "../generated/prisma/enums.js";
+import { PrismaClient } from "../src/generated/prisma/client.js";
+import { EventStatus, UserRole } from "../src/generated/prisma/enums.js";
 
 const connectionString = process.env.DATABASE_URL;
 
