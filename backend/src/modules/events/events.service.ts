@@ -6,7 +6,9 @@ function getAvailabilityStatus(totalCapacity: number) {
   return totalCapacity > 0 ? "available" : "sold_out";
 }
 
-function mapEventListItem(event: Awaited<ReturnType<typeof findPublishedEvents>>[number]) {
+function mapEventListItem(
+  event: Awaited<ReturnType<typeof findPublishedEvents>>[number],
+) {
   const minTicketPrice = event.ticketTypes.reduce<number | null>(
     (currentMin, ticketType) =>
       currentMin === null
@@ -33,7 +35,9 @@ function mapEventListItem(event: Awaited<ReturnType<typeof findPublishedEvents>>
   };
 }
 
-function mapEventDetail(event: NonNullable<Awaited<ReturnType<typeof findEventById>>>) {
+function mapEventDetail(
+  event: NonNullable<Awaited<ReturnType<typeof findEventById>>>,
+) {
   const totalCapacity = event.ticketTypes.reduce(
     (sum, ticketType) => sum + ticketType.capacity,
     0,

@@ -1,0 +1,9 @@
+.git
+.pnpm-store
+backend/dist
+backend/generated
+backend/node_modules
+backend/src/generated
+mobile/node_modules
+pnpm-lock.yaml
+**/pnpm-lock.yaml

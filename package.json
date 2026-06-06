@@ -1,0 +1,20 @@
+{
+  "name": "event-booking-platform",
+  "version": "1.0.0",
+  "private": true,
+  "packageManager": "pnpm@11.1.2",
+  "scripts": {
+    "backend:dev": "pnpm --dir backend run dev",
+    "backend:build": "pnpm --dir backend run build",
+    "backend:test": "pnpm --dir backend run test",
+    "mobile:start": "pnpm --dir mobile run start",
+    "mobile:typecheck": "pnpm --dir mobile exec tsc --noEmit",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "pnpm run format:check && pnpm run backend:build && pnpm run mobile:typecheck",
+    "check": "pnpm run lint && pnpm run backend:test"
+  },
+  "devDependencies": {
+    "prettier": "^3.7.4"
+  }
+}
