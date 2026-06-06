@@ -49,6 +49,8 @@ pnpm run prisma:seed
 
 ## Mobile Setup
 
+Create `mobile/.env` from the example and set `EXPO_PUBLIC_API_URL` to your backend API URL.
+
 ```bash
 cd mobile
 pnpm install

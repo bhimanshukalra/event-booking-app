@@ -225,16 +225,16 @@ Goal: build the first mobile app screens for browsing events.
 
 Steps:
 
-- [ ] Add app navigation.
-- [ ] Add API client module.
-- [ ] Add event list screen.
-- [ ] Add event detail screen.
-- [ ] Add event list loading state.
-- [ ] Add event list empty state.
-- [ ] Add event list error state.
-- [ ] Add event detail loading state.
-- [ ] Add event detail not-found/error state.
-- [ ] Display ticket type summary on event detail.
+- [x] Add app navigation.
+- [x] Add API client module.
+- [x] Add event list screen.
+- [x] Add event detail screen.
+- [x] Add event list loading state.
+- [x] Add event list empty state.
+- [x] Add event list error state.
+- [x] Add event detail loading state.
+- [x] Add event detail not-found/error state.
+- [x] Display ticket type summary on event detail.
 
 Required screens:
 
@@ -245,9 +245,9 @@ EventDetailScreen
 
 Exit criteria:
 
-- [ ] Customer can open the app and see seeded events.
-- [ ] Customer can tap an event and view details.
-- [ ] Screens handle loading, empty, and error states cleanly.
+- [x] Customer can open the app and see seeded events.
+- [x] Customer can tap an event and view details.
+- [x] Screens handle loading, empty, and error states cleanly.
 
 ## Phase 1.6: Foundation Verification
 
@@ -277,12 +277,12 @@ Exit criteria:
 - [x] Mobile app scaffold
 - [x] PostgreSQL migrations
 - [x] Seed data
-- [ ] Demo auth and roles
+- [x] Demo auth and roles
 - [x] Event list API
 - [x] Event detail API
-- [ ] Customer event list screen
-- [ ] Customer event detail screen
-- [ ] Basic README setup instructions
+- [x] Customer event list screen
+- [x] Customer event detail screen
+- [x] Basic README setup instructions
 
 ## Out Of Scope For Foundation
 
