@@ -1,13 +1,18 @@
 import { EventStatus } from "../../generated/prisma/enums.js";
 import { prisma } from "../../config/prisma.js";
 import { HttpError } from "../../shared/errors/http-error.js";
+import {
+  getTicketTypeAvailability,
+  type TicketTypeAvailability,
+} from "./availability.service.js";
 
-function getAvailabilityStatus(totalCapacity: number) {
-  return totalCapacity > 0 ? "available" : "sold_out";
+function getAvailabilityStatus(totalAvailableQuantity: number) {
+  return totalAvailableQuantity > 0 ? "available" : "sold_out";
 }
 
 function mapEventListItem(
   event: Awaited<ReturnType<typeof findPublishedEvents>>[number],
+  availabilityByTicketTypeId: Map<string, TicketTypeAvailability>,
 ) {
   const minTicketPrice = event.ticketTypes.reduce<number | null>(
     (currentMin, ticketType) =>
@@ -18,6 +23,13 @@ function mapEventListItem(
   );
   const totalCapacity = event.ticketTypes.reduce(
     (sum, ticketType) => sum + ticketType.capacity,
+    0,
+  );
+  const totalAvailableQuantity = event.ticketTypes.reduce(
+    (sum, ticketType) =>
+      sum +
+      (availabilityByTicketTypeId.get(ticketType.id)?.availableQuantity ??
+        ticketType.capacity),
     0,
   );
 
@@ -31,15 +43,21 @@ function mapEventListItem(
     heroImageUrl: event.heroImageUrl,
     minPriceCents: minTicketPrice,
     currency: event.ticketTypes[0]?.currency ?? "USD",
-    availabilityStatus: getAvailabilityStatus(totalCapacity),
+    availabilityStatus: getAvailabilityStatus(
+      totalCapacity === 0 ? 0 : totalAvailableQuantity,
+    ),
   };
 }
 
 function mapEventDetail(
   event: NonNullable<Awaited<ReturnType<typeof findEventById>>>,
+  availabilityByTicketTypeId: Map<string, TicketTypeAvailability>,
 ) {
-  const totalCapacity = event.ticketTypes.reduce(
-    (sum, ticketType) => sum + ticketType.capacity,
+  const totalAvailableQuantity = event.ticketTypes.reduce(
+    (sum, ticketType) =>
+      sum +
+      (availabilityByTicketTypeId.get(ticketType.id)?.availableQuantity ??
+        ticketType.capacity),
     0,
   );
 
@@ -66,8 +84,16 @@ function mapEventDetail(
       priceCents: ticketType.priceCents,
       currency: ticketType.currency,
       capacity: ticketType.capacity,
+      availableQuantity:
+        availabilityByTicketTypeId.get(ticketType.id)?.availableQuantity ??
+        ticketType.capacity,
+      reservedQuantity:
+        availabilityByTicketTypeId.get(ticketType.id)?.reservedQuantity ?? 0,
+      confirmedSoldQuantity:
+        availabilityByTicketTypeId.get(ticketType.id)?.confirmedSoldQuantity ??
+        0,
     })),
-    availabilityStatus: getAvailabilityStatus(totalCapacity),
+    availabilityStatus: getAvailabilityStatus(totalAvailableQuantity),
   };
 }
 
@@ -115,9 +141,14 @@ function findEventById(id: string) {
 
 export async function listEvents() {
   const events = await findPublishedEvents();
+  const availabilityByTicketTypeId = await getTicketTypeAvailability(
+    events.flatMap((event) => event.ticketTypes),
+  );
 
   return {
-    data: events.map(mapEventListItem),
+    data: events.map((event) =>
+      mapEventListItem(event, availabilityByTicketTypeId),
+    ),
   };
 }
 
@@ -129,6 +160,9 @@ export async function getEventById(id: string) {
   }
 
   return {
-    data: mapEventDetail(event),
+    data: mapEventDetail(
+      event,
+      await getTicketTypeAvailability(event.ticketTypes),
+    ),
   };
 }

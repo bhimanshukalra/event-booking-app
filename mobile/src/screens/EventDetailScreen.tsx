@@ -88,8 +88,14 @@ function EventDetailContent({ event }: { event: EventDetail }) {
                 </Text>
               ) : null}
               <Text style={styles.ticketCapacity}>
-                {ticketType.capacity} total tickets
+                {ticketType.availableQuantity} available of{" "}
+                {ticketType.capacity} total
               </Text>
+              {ticketType.reservedQuantity > 0 ? (
+                <Text style={styles.ticketReserved}>
+                  {ticketType.reservedQuantity} temporarily held
+                </Text>
+              ) : null}
             </View>
             <Text style={styles.ticketPrice}>
               {formatPrice(ticketType.priceCents, ticketType.currency)}
@@ -195,6 +201,12 @@ const styles = StyleSheet.create({
     color: "#10231e",
     fontSize: 17,
     fontWeight: "900",
+  },
+  ticketReserved: {
+    color: "#9b5c18",
+    fontSize: 13,
+    fontWeight: "700",
+    marginTop: 4,
   },
   ticketRow: {
     alignItems: "flex-start",

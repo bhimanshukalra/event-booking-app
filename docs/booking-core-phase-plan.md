@@ -93,14 +93,14 @@ Goal: compute remaining inventory from confirmed capacity and active reservation
 
 Steps:
 
-- [ ] Create availability service.
-- [ ] Count total ticket type capacity.
-- [ ] Count active pending reservations where `expires_at > now()`.
-- [ ] Ignore expired pending reservations.
-- [ ] Prepare confirmed booking count placeholder for Phase 3.
-- [ ] Return available, reserved, and capacity counts.
-- [ ] Add availability fields to event detail ticket types.
-- [ ] Add unit/service tests for availability calculation.
+- [x] Create availability service.
+- [x] Count total ticket type capacity.
+- [x] Count active pending reservations where `expires_at > now()`.
+- [x] Ignore expired pending reservations.
+- [x] Prepare confirmed booking count placeholder for Phase 3.
+- [x] Return available, reserved, and capacity counts.
+- [x] Add availability fields to event detail ticket types.
+- [x] Add unit/service tests for availability calculation.
 
 Availability formula for Phase 2:
 
@@ -116,9 +116,9 @@ available = ticket_type.capacity - active_reserved_quantity - confirmed_sold_qua
 
 Exit criteria:
 
-- [ ] Event detail shows remaining available quantity per ticket type.
-- [ ] Expired reservations do not reduce availability.
-- [ ] Availability is calculated server-side.
+- [x] Event detail shows remaining available quantity per ticket type.
+- [x] Expired reservations do not reduce availability.
+- [x] Availability is calculated server-side.
 
 ## Phase 2.3: Reservation Creation API
 

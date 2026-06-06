@@ -24,6 +24,9 @@ export type TicketType = {
   priceCents: number;
   currency: string;
   capacity: number;
+  availableQuantity: number;
+  reservedQuantity: number;
+  confirmedSoldQuantity: number;
 };
 
 export type EventDetail = {

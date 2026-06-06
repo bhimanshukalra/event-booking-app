@@ -1,6 +1,53 @@
 import request from "supertest";
 import { describe, expect, it } from "vitest";
+import { ReservationStatus } from "../src/generated/prisma/enums.js";
 import { app } from "../src/app.js";
+import { prisma } from "../src/config/prisma.js";
+
+const customerEmail = "customer@eventbooking.local";
+
+async function getFirstEventTicketType() {
+  const eventsResponse = await request(app).get("/events");
+  const eventId = eventsResponse.body.data[0].id;
+
+  const detailResponse = await request(app).get(`/events/${eventId}`);
+  const ticketType = detailResponse.body.data.ticketTypes[0];
+
+  return {
+    eventId,
+    ticketType,
+  };
+}
+
+async function createPendingReservation({
+  expiresAt,
+  quantity,
+  ticketTypeId,
+}: {
+  expiresAt: Date;
+  quantity: number;
+  ticketTypeId: string;
+}) {
+  const customer = await prisma.user.findUniqueOrThrow({
+    where: {
+      email: customerEmail,
+    },
+  });
+
+  return prisma.reservation.create({
+    data: {
+      expiresAt,
+      status: ReservationStatus.pending,
+      userId: customer.id,
+      items: {
+        create: {
+          quantity,
+          ticketTypeId,
+        },
+      },
+    },
+  });
+}
 
 describe("foundation API smoke tests", () => {
   it("returns health status", async () => {
@@ -53,6 +100,74 @@ describe("foundation API smoke tests", () => {
       }),
     );
     expect(response.body.data.ticketTypes.length).toBeGreaterThan(0);
+    expect(response.body.data.ticketTypes[0]).toEqual(
+      expect.objectContaining({
+        capacity: expect.any(Number),
+        availableQuantity: expect.any(Number),
+        reservedQuantity: expect.any(Number),
+        confirmedSoldQuantity: expect.any(Number),
+      }),
+    );
+  });
+
+  it("reduces ticket availability for active pending reservations", async () => {
+    const { eventId, ticketType } = await getFirstEventTicketType();
+    const reservation = await createPendingReservation({
+      expiresAt: new Date(Date.now() + 5 * 60 * 1000),
+      quantity: 2,
+      ticketTypeId: ticketType.id,
+    });
+
+    try {
+      const response = await request(app).get(`/events/${eventId}`);
+      const updatedTicketType = response.body.data.ticketTypes.find(
+        (candidate: { id: string }) => candidate.id === ticketType.id,
+      );
+
+      expect(response.status).toBe(200);
+      expect(updatedTicketType).toEqual(
+        expect.objectContaining({
+          availableQuantity: ticketType.availableQuantity - 2,
+          reservedQuantity: ticketType.reservedQuantity + 2,
+        }),
+      );
+    } finally {
+      await prisma.reservation.delete({
+        where: {
+          id: reservation.id,
+        },
+      });
+    }
+  });
+
+  it("ignores expired pending reservations in ticket availability", async () => {
+    const { eventId, ticketType } = await getFirstEventTicketType();
+    const reservation = await createPendingReservation({
+      expiresAt: new Date(Date.now() - 5 * 60 * 1000),
+      quantity: 3,
+      ticketTypeId: ticketType.id,
+    });
+
+    try {
+      const response = await request(app).get(`/events/${eventId}`);
+      const updatedTicketType = response.body.data.ticketTypes.find(
+        (candidate: { id: string }) => candidate.id === ticketType.id,
+      );
+
+      expect(response.status).toBe(200);
+      expect(updatedTicketType).toEqual(
+        expect.objectContaining({
+          availableQuantity: ticketType.availableQuantity,
+          reservedQuantity: ticketType.reservedQuantity,
+        }),
+      );
+    } finally {
+      await prisma.reservation.delete({
+        where: {
+          id: reservation.id,
+        },
+      });
+    }
   });
 
   it("returns not found for an unknown event", async () => {
