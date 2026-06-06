@@ -37,17 +37,17 @@ Goal: add the database tables and statuses needed to represent temporary reserva
 
 Steps:
 
-- [ ] Add `ReservationStatus` enum.
-- [ ] Add `reservations` table/model.
-- [ ] Add `reservation_items` table/model.
-- [ ] Link reservations to `users`.
-- [ ] Link reservation items to `ticket_types`.
-- [ ] Add `expires_at` to reservations.
-- [ ] Add `quantity` to reservation items.
-- [ ] Add indexes for active reservation lookup.
-- [ ] Add database-level quantity check if supported by migration SQL.
-- [ ] Add migration.
-- [ ] Regenerate Prisma client.
+- [x] Add `ReservationStatus` enum.
+- [x] Add `reservations` table/model.
+- [x] Add `reservation_items` table/model.
+- [x] Link reservations to `users`.
+- [x] Link reservation items to `ticket_types`.
+- [x] Add `expires_at` to reservations.
+- [x] Add `quantity` to reservation items.
+- [x] Add indexes for active reservation lookup.
+- [x] Add database-level quantity check if supported by migration SQL.
+- [x] Add migration.
+- [x] Regenerate Prisma client.
 
 Recommended reservation statuses:
 
@@ -82,10 +82,10 @@ updated_at
 
 Exit criteria:
 
-- [ ] Migrations create reservation tables from scratch.
-- [ ] Prisma client exposes reservation models.
-- [ ] Active reservation lookup can be indexed efficiently.
-- [ ] Reservation item quantities cannot be zero or negative.
+- [x] Migrations create reservation tables from scratch.
+- [x] Prisma client exposes reservation models.
+- [x] Active reservation lookup can be indexed efficiently.
+- [x] Reservation item quantities cannot be zero or negative.
 
 ## Phase 2.2: Availability Calculation
 

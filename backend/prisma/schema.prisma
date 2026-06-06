@@ -24,6 +24,13 @@ enum EventStatus {
   cancelled
 }
 
+enum ReservationStatus {
+  pending
+  confirmed
+  expired
+  cancelled
+}
+
 model User {
   id        String   @id @default(cuid())
   name      String
@@ -31,6 +38,8 @@ model User {
   role      UserRole @default(customer)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  reservations Reservation[]
 
   @@map("users")
 }
@@ -86,6 +95,40 @@ model TicketType {
 
   event Event @relation(fields: [eventId], references: [id])
 
+  reservationItems ReservationItem[]
+
   @@index([eventId])
   @@map("ticket_types")
+}
+
+model Reservation {
+  id        String            @id @default(cuid())
+  userId    String
+  status    ReservationStatus @default(pending)
+  expiresAt DateTime
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+
+  user  User              @relation(fields: [userId], references: [id])
+  items ReservationItem[]
+
+  @@index([status, expiresAt])
+  @@index([userId, status])
+  @@map("reservations")
+}
+
+model ReservationItem {
+  id            String   @id @default(cuid())
+  reservationId String
+  ticketTypeId  String
+  quantity      Int
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  reservation Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
+  ticketType  TicketType  @relation(fields: [ticketTypeId], references: [id])
+
+  @@index([reservationId])
+  @@index([ticketTypeId])
+  @@map("reservation_items")
 }
