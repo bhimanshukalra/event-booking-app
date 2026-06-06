@@ -143,10 +143,10 @@ Steps:
 - [x] Seed one customer account.
 - [x] Seed one admin account.
 - [x] Seed one staff account.
-- [ ] Add simple demo login or demo user selection endpoint.
-- [ ] Add request middleware that attaches the active user.
-- [ ] Add role guard helpers for admin and staff routes.
-- [ ] Add unauthorized and forbidden API responses.
+- [x] Add simple demo login or demo user selection endpoint.
+- [x] Add request middleware that attaches the active user.
+- [x] Add role guard helpers for admin and staff routes.
+- [x] Add unauthorized and forbidden API responses.
 
 Required roles:
 
@@ -158,9 +158,9 @@ staff
 
 Exit criteria:
 
-- [ ] API requests can run as customer, admin, or staff.
-- [ ] Admin-only routes reject customer users.
-- [ ] Staff-only routes reject customer users.
+- [x] API requests can run as customer, admin, or staff.
+- [x] Admin-only routes reject customer users.
+- [x] Staff-only routes reject customer users.
 
 ## Phase 1.4: Event Discovery API
 
