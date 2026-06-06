@@ -1,11 +1,6 @@
 import request from "supertest";
-import { afterAll, describe, expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 import { app } from "../src/app.js";
-import { prisma } from "../src/config/prisma.js";
-
-afterAll(async () => {
-  await prisma.$disconnect();
-});
 
 describe("foundation API smoke tests", () => {
   it("returns health status", async () => {

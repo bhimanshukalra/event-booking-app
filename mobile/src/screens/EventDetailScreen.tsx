@@ -64,7 +64,7 @@ function EventDetailContent({ event }: { event: EventDetail }) {
       <Text style={styles.category}>{event.category}</Text>
       <Text style={styles.title}>{event.title}</Text>
       <Text style={styles.meta}>
-        {formatDateTime(event.startsAt)} · {event.venue.name}
+        {formatDateTime(event.startsAt)} - {event.venue.name}
       </Text>
       <Text style={styles.description}>{event.description}</Text>
 

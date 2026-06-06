@@ -91,7 +91,7 @@ function EventCard({
       </View>
       <Text style={styles.eventTitle}>{event.title}</Text>
       <Text style={styles.eventMeta}>
-        {formatDate(event.startsAt)} · {event.venueName}, {event.city}
+        {formatDate(event.startsAt)} - {event.venueName}, {event.city}
       </Text>
       <Text style={styles.price}>{formatPrice(event)}</Text>
     </Pressable>

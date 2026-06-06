@@ -1,16 +1,11 @@
 import request from "supertest";
-import { afterAll, describe, expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 import { UserRole } from "../src/generated/prisma/enums.js";
 import { app } from "../src/app.js";
-import { prisma } from "../src/config/prisma.js";
 
 const customerEmail = "customer@eventbooking.local";
 const adminEmail = "admin@eventbooking.local";
 const staffEmail = "staff@eventbooking.local";
-
-afterAll(async () => {
-  await prisma.$disconnect();
-});
 
 describe("demo auth and roles", () => {
   it("returns seeded demo users for user selection", async () => {

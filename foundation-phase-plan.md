@@ -255,21 +255,21 @@ Goal: make sure the foundation is reliable enough to build booking on top of it.
 
 Steps:
 
-- [ ] Run backend linting.
+- [x] Run backend linting.
 - [x] Run backend tests or API smoke checks.
-- [ ] Run mobile linting.
-- [ ] Manually launch the customer app.
+- [x] Run mobile linting.
+- [x] Manually launch the customer app.
 - [x] Verify event list loads from the backend.
 - [x] Verify event detail loads from the backend.
 - [x] Verify seeded demo users exist.
-- [ ] Verify role guards work for protected placeholder routes.
-- [ ] Update README setup notes.
+- [x] Verify role guards work for protected placeholder routes.
+- [x] Update README setup notes.
 
 Exit criteria:
 
-- [ ] A new developer can follow the README and run the foundation locally.
-- [ ] The customer event discovery flow works end to end.
-- [ ] The codebase is ready for Phase 2: Booking Core.
+- [x] A new developer can follow the README and run the foundation locally.
+- [x] The customer event discovery flow works end to end.
+- [x] The codebase is ready for Phase 2: Booking Core.
 
 ## Foundation Deliverables
 

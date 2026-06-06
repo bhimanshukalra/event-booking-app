@@ -47,6 +47,13 @@ const demoVenues = [
   },
 ];
 
+function futureDate(daysFromNow: number, hourUtc: number, minuteUtc = 0) {
+  const date = new Date();
+  date.setUTCDate(date.getUTCDate() + daysFromNow);
+  date.setUTCHours(hourUtc, minuteUtc, 0, 0);
+  return date;
+}
+
 async function seedUsers() {
   await Promise.all(
     demoUsers.map((user) =>
@@ -91,8 +98,8 @@ async function seedEvents() {
     description:
       "A high-energy evening featuring three independent bands, food vendors, and late-night sets.",
     category: "Music",
-    startsAt: new Date("2026-08-15T19:00:00.000Z"),
-    endsAt: new Date("2026-08-15T23:00:00.000Z"),
+    startsAt: futureDate(45, 19),
+    endsAt: futureDate(45, 23),
     status: EventStatus.published,
     heroImageUrl:
       "https://images.unsplash.com/photo-1501386761578-eac5c94b800a",
@@ -120,8 +127,8 @@ async function seedEvents() {
     description:
       "A practical conference for builders covering product strategy, engineering execution, and launch operations.",
     category: "Conference",
-    startsAt: new Date("2026-09-10T16:00:00.000Z"),
-    endsAt: new Date("2026-09-10T23:00:00.000Z"),
+    startsAt: futureDate(72, 16),
+    endsAt: futureDate(72, 23),
     status: EventStatus.published,
     heroImageUrl:
       "https://images.unsplash.com/photo-1540575467063-178a50c2df87",
@@ -149,8 +156,8 @@ async function seedEvents() {
     description:
       "A curated tasting event with local chefs, seasonal menus, and paired drinks.",
     category: "Food",
-    startsAt: new Date("2026-10-04T00:30:00.000Z"),
-    endsAt: new Date("2026-10-04T04:00:00.000Z"),
+    startsAt: futureDate(96, 0, 30),
+    endsAt: futureDate(96, 4),
     status: EventStatus.draft,
     heroImageUrl:
       "https://images.unsplash.com/photo-1414235077428-338989a2e8c0",
@@ -190,7 +197,6 @@ async function upsertEventWithTicketTypes({
   const existingEvent = await prisma.event.findFirst({
     where: {
       title: event.title,
-      startsAt: event.startsAt,
     },
   });
 

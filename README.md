@@ -97,6 +97,27 @@ admin@eventbooking.local
 staff@eventbooking.local
 ```
 
+Protected demo auth checks:
+
+```text
+GET /auth/me
+GET /auth/demo-users
+GET /auth/admin-check
+GET /auth/staff-check
+```
+
+Use the `x-demo-user-email` header to run protected requests as a seeded user.
+
+## Foundation Verification
+
+Run the full foundation check from the repository root:
+
+```bash
+pnpm run check
+```
+
+This verifies formatting, backend TypeScript build, mobile TypeScript build, and backend API smoke tests.
+
 ## Admin Surface Decision
 
 For Foundation, admin/staff work starts as backend API-only. A web admin UI can be added later if it helps the demo, but Phase 1.1 does not require one.
