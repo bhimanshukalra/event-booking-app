@@ -36,6 +36,14 @@ pnpm run build
 pnpm run test
 pnpm run prisma:generate
 pnpm run prisma:migrate
+pnpm run prisma:reset
+pnpm run prisma:seed
+```
+
+To reset the local database without manual SQL:
+
+```bash
+pnpm run prisma:reset
 pnpm run prisma:seed
 ```
 
