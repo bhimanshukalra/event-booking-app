@@ -45,6 +45,13 @@ Exit criteria:
 
 Goal: implement the most important engineering proof point: temporary reservation locking that prevents overselling.
 
+Correctness rule:
+
+- PostgreSQL remains the source of truth for inventory correctness.
+- Redis can support expiry, caching, rate limiting, and short-lived request guards.
+- Redis must not be the only protection against double booking.
+- If Redis is unavailable, PostgreSQL transactions and constraints must still prevent overselling.
+
 Deliverables:
 
 - Ticket quantity selection for general admission ticket types
@@ -54,6 +61,11 @@ Deliverables:
 - Availability calculation that excludes active reservations and confirmed bookings
 - PostgreSQL transaction around reservation creation
 - Row-level lock on the relevant ticket type during reservation creation
+- Redis integration for production-minded reservation support
+- Redis TTL or sorted-set helper for reservation expiry tracking
+- Redis-backed short-lived duplicate request guard for reservation attempts
+- Optional Redis inventory count cache with clear invalidation rules
+- Optional Redis rate limit for reservation endpoints
 - Conflict response when requested quantity is no longer available
 - Reservation detail API
 - Countdown timer in the customer app
@@ -64,6 +76,7 @@ Exit criteria:
 - A customer can reserve available tickets and see a countdown timer.
 - Expired reservations no longer reduce availability.
 - Two concurrent reservation attempts cannot reserve more tickets than capacity.
+- Redis support improves operational behavior without weakening PostgreSQL correctness.
 
 ### Phase 3: Payment And Tickets
 
