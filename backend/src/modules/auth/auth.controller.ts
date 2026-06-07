@@ -1,6 +1,6 @@
 import type { RequestHandler } from "express";
-import { UserRole } from "../../generated/prisma/enums.js";
-import { listDemoUsers } from "./auth.service.js";
+import { UserRole } from "../../generated/prisma/enums";
+import { listDemoUsers } from "./auth.service";
 
 export const listDemoUsersController: RequestHandler = async (
   _req,

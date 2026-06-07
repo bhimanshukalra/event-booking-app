@@ -1,12 +1,12 @@
 import { Router, type Router as ExpressRouter } from "express";
-import { UserRole } from "../../generated/prisma/enums.js";
-import { requireAuth, requireRole } from "../../middleware/auth.middleware.js";
+import { UserRole } from "../../generated/prisma/enums";
+import { requireAuth, requireRole } from "../../middleware/auth.middleware";
 import {
   adminCheckController,
   getCurrentUserController,
   listDemoUsersController,
   staffCheckController,
-} from "./auth.controller.js";
+} from "./auth.controller";
 
 export const authRouter: ExpressRouter = Router();
 

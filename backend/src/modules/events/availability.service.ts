@@ -1,5 +1,5 @@
-import { ReservationStatus } from "../../generated/prisma/enums.js";
-import { prisma } from "../../config/prisma.js";
+import { ReservationStatus } from "../../generated/prisma/enums";
+import { prisma } from "../../config/prisma";
 
 type TicketTypeCapacity = {
   id: string;

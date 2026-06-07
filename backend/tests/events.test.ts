@@ -1,8 +1,8 @@
 import request from "supertest";
 import { describe, expect, it } from "vitest";
-import { ReservationStatus } from "../src/generated/prisma/enums.js";
-import { app } from "../src/app.js";
-import { prisma } from "../src/config/prisma.js";
+import { ReservationStatus } from "../src/generated/prisma/enums";
+import { app } from "../src/app";
+import { prisma } from "../src/config/prisma";
 
 const customerEmail = "customer@eventbooking.local";
 

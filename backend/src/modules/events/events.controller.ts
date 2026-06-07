@@ -1,6 +1,6 @@
 import type { RequestHandler } from "express";
-import { HttpError } from "../../shared/errors/http-error.js";
-import { getEventById, listEvents } from "./events.service.js";
+import { HttpError } from "../../shared/errors/http-error";
+import { getEventById, listEvents } from "./events.service";
 
 export const listEventsController: RequestHandler = async (_req, res, next) => {
   try {

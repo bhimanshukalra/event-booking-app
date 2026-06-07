@@ -1,10 +1,10 @@
-import { EventStatus } from "../../generated/prisma/enums.js";
-import { prisma } from "../../config/prisma.js";
-import { HttpError } from "../../shared/errors/http-error.js";
+import { EventStatus } from "../../generated/prisma/enums";
+import { prisma } from "../../config/prisma";
+import { HttpError } from "../../shared/errors/http-error";
 import {
   getTicketTypeAvailability,
   type TicketTypeAvailability,
-} from "./availability.service.js";
+} from "./availability.service";
 
 function getAvailabilityStatus(totalAvailableQuantity: number) {
   return totalAvailableQuantity > 0 ? "available" : "sold_out";

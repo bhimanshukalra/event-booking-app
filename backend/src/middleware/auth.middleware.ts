@@ -1,7 +1,7 @@
 import type { NextFunction, Request, RequestHandler, Response } from "express";
-import type { UserRole } from "../generated/prisma/enums.js";
-import { prisma } from "../config/prisma.js";
-import { HttpError } from "../shared/errors/http-error.js";
+import type { UserRole } from "../generated/prisma/enums";
+import { prisma } from "../config/prisma";
+import { HttpError } from "../shared/errors/http-error";
 
 const demoUserEmailHeader = "x-demo-user-email";
 

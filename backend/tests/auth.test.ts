@@ -1,7 +1,7 @@
 import request from "supertest";
 import { describe, expect, it } from "vitest";
-import { UserRole } from "../src/generated/prisma/enums.js";
-import { app } from "../src/app.js";
+import { UserRole } from "../src/generated/prisma/enums";
+import { app } from "../src/app";
 
 const customerEmail = "customer@eventbooking.local";
 const adminEmail = "admin@eventbooking.local";

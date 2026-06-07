@@ -1,5 +1,5 @@
 import type { ErrorRequestHandler } from "express";
-import { HttpError } from "../shared/errors/http-error.js";
+import { HttpError } from "../shared/errors/http-error";
 
 export const errorMiddleware: ErrorRequestHandler = (
   error,
