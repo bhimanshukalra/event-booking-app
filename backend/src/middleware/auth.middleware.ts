@@ -3,11 +3,11 @@ import type { UserRole } from "../generated/prisma/enums";
 import { prisma } from "../config/prisma";
 import { HttpError } from "../shared/errors/http-error";
 
-const demoUserEmailHeader = "x-demo-user-email";
+const DEMO_USER_EMAIL_HEADER = "x-demo-user-email";
 
 export const demoAuthMiddleware: RequestHandler = async (req, _res, next) => {
   try {
-    const demoUserEmail = req.header(demoUserEmailHeader);
+    const demoUserEmail = req.header(DEMO_USER_EMAIL_HEADER);
 
     if (!demoUserEmail) {
       next();
@@ -39,7 +39,7 @@ export const demoAuthMiddleware: RequestHandler = async (req, _res, next) => {
 
 export function requireAuth(req: Request, _res: Response, next: NextFunction) {
   if (!req.user) {
-    next(new HttpError(401, `Missing ${demoUserEmailHeader} header`));
+    next(new HttpError(401, `Missing ${DEMO_USER_EMAIL_HEADER} header`));
     return;
   }
 
@@ -49,7 +49,7 @@ export function requireAuth(req: Request, _res: Response, next: NextFunction) {
 export function requireRole(...allowedRoles: UserRole[]): RequestHandler {
   return (req, _res, next) => {
     if (!req.user) {
-      next(new HttpError(401, `Missing ${demoUserEmailHeader} header`));
+      next(new HttpError(401, `Missing ${DEMO_USER_EMAIL_HEADER} header`));
       return;
     }
 

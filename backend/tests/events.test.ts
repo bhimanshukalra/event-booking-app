@@ -4,7 +4,7 @@ import { ReservationStatus } from "../src/generated/prisma/enums";
 import { app } from "../src/app";
 import { prisma } from "../src/config/prisma";
 
-const customerEmail = "customer@eventbooking.local";
+const CUSTOMER_EMAIL = "customer@eventbooking.local";
 
 async function getFirstEventTicketType() {
   const eventsResponse = await request(app).get("/events");
@@ -30,7 +30,7 @@ async function createPendingReservation({
 }) {
   const customer = await prisma.user.findUniqueOrThrow({
     where: {
-      email: customerEmail,
+      email: CUSTOMER_EMAIL,
     },
   });
 
