@@ -4,6 +4,7 @@ import { demoAuthMiddleware } from "./middleware/auth.middleware";
 import { errorMiddleware } from "./middleware/error.middleware";
 import { authRouter } from "./modules/auth/auth.routes";
 import { eventsRouter } from "./modules/events/events.routes";
+import { reservationsRouter } from "./modules/reservations/reservations.routes";
 
 export const app: Express = express();
 
@@ -21,5 +22,6 @@ app.get("/health", healthCheckHandler);
 
 app.use("/auth", authRouter);
 app.use("/events", eventsRouter);
+app.use("/reservations", reservationsRouter);
 
 app.use(errorMiddleware);

@@ -126,16 +126,16 @@ Goal: let a customer reserve ticket quantities while preventing overselling.
 
 Steps:
 
-- [ ] Add `POST /reservations`.
-- [ ] Require demo customer auth.
-- [ ] Validate request body with Zod.
-- [ ] Accept optional idempotency key for safe client retries.
-- [ ] Accept ticket type and quantity.
-- [ ] Reject zero or negative quantity.
-- [ ] Reject unavailable ticket type IDs.
-- [ ] Create reservation with a 5-minute expiry.
-- [ ] Return reservation details and expiry timestamp.
-- [ ] Return clear conflict response when inventory is unavailable.
+- [x] Add `POST /reservations`.
+- [x] Require demo customer auth.
+- [x] Validate request body with Zod.
+- [x] Accept optional idempotency key for safe client retries.
+- [x] Accept ticket type and quantity.
+- [x] Reject zero or negative quantity.
+- [x] Reject unavailable ticket type IDs.
+- [x] Create reservation with a 5-minute expiry.
+- [x] Return reservation details and expiry timestamp.
+- [x] Return clear conflict response when inventory is unavailable.
 
 Suggested request:
 
@@ -165,10 +165,10 @@ Suggested success response:
 
 Exit criteria:
 
-- [ ] Authenticated customers can create reservations.
-- [ ] Invalid quantities are rejected.
-- [ ] Unavailable inventory returns a conflict response.
-- [ ] Retried reservation requests do not create accidental duplicate holds.
+- [x] Authenticated customers can create reservations.
+- [x] Invalid quantities are rejected.
+- [x] Unavailable inventory returns a conflict response.
+- [x] Retried reservation requests do not create accidental duplicate holds.
 
 ## Phase 2.4: PostgreSQL Transaction Safety
 
