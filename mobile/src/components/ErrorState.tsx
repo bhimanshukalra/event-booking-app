@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 
 type ErrorStateProps = {
   message: string;
@@ -7,52 +7,20 @@ type ErrorStateProps = {
 
 export function ErrorState({ message, onRetry }: ErrorStateProps) {
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Something went sideways</Text>
-      <Text style={styles.message}>{message}</Text>
+    <View className="items-center rounded-lg border border-[#f3cfb4] bg-[#fff8f2] px-6 py-7">
+      <Text className="text-lg font-extrabold text-[#4a2013]">
+        Something went sideways
+      </Text>
+      <Text className="mt-2 text-center text-[15px] leading-[22px] text-[#7f5542]">
+        {message}
+      </Text>
       <Pressable
         accessibilityRole="button"
         onPress={onRetry}
-        style={styles.button}
+        className="mt-[18px] rounded-lg bg-[#10231e] px-[18px] py-3"
       >
-        <Text style={styles.buttonText}>Try again</Text>
+        <Text className="text-[15px] font-bold text-white">Try again</Text>
       </Pressable>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  button: {
-    backgroundColor: "#10231e",
-    borderRadius: 8,
-    marginTop: 18,
-    paddingHorizontal: 18,
-    paddingVertical: 12,
-  },
-  buttonText: {
-    color: "#ffffff",
-    fontSize: 15,
-    fontWeight: "700",
-  },
-  container: {
-    alignItems: "center",
-    backgroundColor: "#fff8f2",
-    borderColor: "#f3cfb4",
-    borderRadius: 8,
-    borderWidth: 1,
-    paddingHorizontal: 24,
-    paddingVertical: 28,
-  },
-  message: {
-    color: "#7f5542",
-    fontSize: 15,
-    lineHeight: 22,
-    marginTop: 8,
-    textAlign: "center",
-  },
-  title: {
-    color: "#4a2013",
-    fontSize: 18,
-    fontWeight: "800",
-  },
-});

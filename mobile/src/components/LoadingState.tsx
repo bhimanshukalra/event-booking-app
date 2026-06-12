@@ -1,4 +1,4 @@
-import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Text, View } from "react-native";
 
 type LoadingStateProps = {
   label: string;
@@ -6,22 +6,9 @@ type LoadingStateProps = {
 
 export function LoadingState({ label }: LoadingStateProps) {
   return (
-    <View style={styles.container}>
+    <View className="items-center gap-[14px] py-10">
       <ActivityIndicator color="#1f6f5b" size="large" />
-      <Text style={styles.label}>{label}</Text>
+      <Text className="text-[15px] font-semibold text-[#557169]">{label}</Text>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    alignItems: "center",
-    gap: 14,
-    paddingVertical: 40,
-  },
-  label: {
-    color: "#557169",
-    fontSize: 15,
-    fontWeight: "600",
-  },
-});

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
+import { FlatList, Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { EmptyState } from "../components/EmptyState";
 import { ErrorState } from "../components/ErrorState";
@@ -35,12 +35,16 @@ export function EventListScreen({ onSelectEvent }: EventListScreenProps) {
   }, [loadEvents]);
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
-        <View style={styles.header}>
-          <Text style={styles.eyebrow}>Upcoming events</Text>
-          <Text style={styles.title}>Find your next seat</Text>
-          <Text style={styles.subtitle}>
+    <SafeAreaView className="flex-1 bg-[#f5fbf8]">
+      <View className="flex-1 px-5">
+        <View className="pb-[22px] pt-7">
+          <Text className="text-[13px] font-black uppercase text-[#1f6f5b]">
+            Upcoming events
+          </Text>
+          <Text className="mt-2 text-[34px] font-black leading-[39px] text-[#10231e]">
+            Find your next seat
+          </Text>
+          <Text className="mt-2.5 text-base leading-[23px] text-[#557169]">
             Browse live inventory from the booking platform foundation API.
           </Text>
         </View>
@@ -56,9 +60,11 @@ export function EventListScreen({ onSelectEvent }: EventListScreenProps) {
           />
         ) : (
           <FlatList
-            contentContainerStyle={styles.listContent}
+            className="flex-1"
             data={events}
+            ItemSeparatorComponent={() => <View className="h-[14px]" />}
             keyExtractor={(event) => event.id}
+            ListFooterComponent={() => <View className="h-7" />}
             renderItem={({ item }) => (
               <EventCard event={item} onPress={() => onSelectEvent(item.id)} />
             )}
@@ -77,23 +83,34 @@ function EventCard({
   onPress: () => void;
 }) {
   return (
-    <Pressable accessibilityRole="button" onPress={onPress} style={styles.card}>
-      <View style={styles.cardTopRow}>
-        <Text style={styles.category}>{event.category}</Text>
+    <Pressable
+      accessibilityRole="button"
+      onPress={onPress}
+      className="rounded-lg border border-[#d7e4df] bg-white p-[18px]"
+    >
+      <View className="flex-row items-center justify-between">
+        <Text className="text-xs font-black uppercase text-[#1f6f5b]">
+          {event.category}
+        </Text>
         <Text
-          style={[
-            styles.availability,
-            event.availabilityStatus === "sold_out" && styles.soldOut,
-          ]}
+          className={`overflow-hidden rounded-full px-2.5 py-[5px] text-xs font-extrabold ${
+            event.availabilityStatus === "sold_out"
+              ? "bg-[#f4e1d6] text-[#7f3f24]"
+              : "bg-[#dff6ed] text-[#155443]"
+          }`}
         >
           {event.availabilityStatus === "available" ? "Available" : "Sold out"}
         </Text>
       </View>
-      <Text style={styles.eventTitle}>{event.title}</Text>
-      <Text style={styles.eventMeta}>
+      <Text className="mt-4 text-[21px] font-black leading-[27px] text-[#10231e]">
+        {event.title}
+      </Text>
+      <Text className="mt-2 text-sm leading-5 text-[#557169]">
         {formatDate(event.startsAt)} - {event.venueName}, {event.city}
       </Text>
-      <Text style={styles.price}>{formatPrice(event)}</Text>
+      <Text className="mt-4 text-base font-extrabold text-[#10231e]">
+        {formatPrice(event)}
+      </Text>
     </Pressable>
   );
 }
@@ -116,92 +133,3 @@ function formatPrice(event: EventListItem) {
     style: "currency",
   }).format(event.minPriceCents / 100)}`;
 }
-
-const styles = StyleSheet.create({
-  availability: {
-    backgroundColor: "#dff6ed",
-    borderRadius: 999,
-    color: "#155443",
-    fontSize: 12,
-    fontWeight: "800",
-    overflow: "hidden",
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-  },
-  card: {
-    backgroundColor: "#ffffff",
-    borderColor: "#d7e4df",
-    borderRadius: 8,
-    borderWidth: 1,
-    padding: 18,
-  },
-  cardTopRow: {
-    alignItems: "center",
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  category: {
-    color: "#1f6f5b",
-    fontSize: 12,
-    fontWeight: "900",
-    textTransform: "uppercase",
-  },
-  container: {
-    flex: 1,
-    paddingHorizontal: 20,
-  },
-  eventMeta: {
-    color: "#557169",
-    fontSize: 14,
-    lineHeight: 20,
-    marginTop: 8,
-  },
-  eventTitle: {
-    color: "#10231e",
-    fontSize: 21,
-    fontWeight: "900",
-    lineHeight: 27,
-    marginTop: 16,
-  },
-  eyebrow: {
-    color: "#1f6f5b",
-    fontSize: 13,
-    fontWeight: "900",
-    textTransform: "uppercase",
-  },
-  header: {
-    paddingBottom: 22,
-    paddingTop: 28,
-  },
-  listContent: {
-    gap: 14,
-    paddingBottom: 28,
-  },
-  price: {
-    color: "#10231e",
-    fontSize: 16,
-    fontWeight: "800",
-    marginTop: 16,
-  },
-  safeArea: {
-    backgroundColor: "#f5fbf8",
-    flex: 1,
-  },
-  soldOut: {
-    backgroundColor: "#f4e1d6",
-    color: "#7f3f24",
-  },
-  subtitle: {
-    color: "#557169",
-    fontSize: 16,
-    lineHeight: 23,
-    marginTop: 10,
-  },
-  title: {
-    color: "#10231e",
-    fontSize: 34,
-    fontWeight: "900",
-    lineHeight: 39,
-    marginTop: 8,
-  },
-});
