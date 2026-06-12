@@ -41,8 +41,29 @@ export async function getTicketTypeAvailability(
     },
   });
 
+  const confirmedReservationCounts = await prisma.reservationItem.groupBy({
+    by: ["ticketTypeId"],
+    where: {
+      reservation: {
+        status: ReservationStatus.confirmed,
+      },
+      ticketTypeId: {
+        in: ticketTypeIds,
+      },
+    },
+    _sum: {
+      quantity: true,
+    },
+  });
+
   const reservedQuantityByTicketTypeId = new Map(
     activeReservationCounts.map((count) => [
+      count.ticketTypeId,
+      count._sum.quantity ?? 0,
+    ]),
+  );
+  const confirmedSoldQuantityByTicketTypeId = new Map(
+    confirmedReservationCounts.map((count) => [
       count.ticketTypeId,
       count._sum.quantity ?? 0,
     ]),
@@ -52,7 +73,8 @@ export async function getTicketTypeAvailability(
     ticketTypes.map((ticketType) => {
       const reservedQuantity =
         reservedQuantityByTicketTypeId.get(ticketType.id) ?? 0;
-      const confirmedSoldQuantity = 0;
+      const confirmedSoldQuantity =
+        confirmedSoldQuantityByTicketTypeId.get(ticketType.id) ?? 0;
       const availableQuantity = Math.max(
         ticketType.capacity - reservedQuantity - confirmedSoldQuantity,
         0,

@@ -301,10 +301,10 @@ Cascade behavior:
 
 ## Availability Calculation
 
-Phase 2 availability is calculated from ticket capacity minus active pending reservation quantities.
+Phase 2 availability is calculated from ticket capacity minus active pending reservation quantities and confirmed sold quantities.
 
 ```text
-available_quantity = ticket_types.capacity - active_pending_reserved_quantity
+available_quantity = ticket_types.capacity - active_pending_reserved_quantity - confirmed_sold_quantity
 ```
 
 An active pending reservation item counts against availability only when:
@@ -316,10 +316,10 @@ reservation.expiresAt > now()
 
 Expired pending reservations do not reduce availability.
 
-Phase 3 will extend this calculation to include confirmed bookings:
+Confirmed reservation items always count against availability, even after the original reservation expiry time:
 
 ```text
-available_quantity = capacity - active_pending_reserved_quantity - confirmed_sold_quantity
+reservation.status = confirmed
 ```
 
 ## Current Data Flow
@@ -350,4 +350,4 @@ users
 - `capacity` lives on `ticket_types`, not `events`, because each event can have multiple independent ticket inventories.
 - `reservations` and `reservation_items` are separate so a single reservation can hold multiple ticket types.
 - Active reservation lookup is indexed by `status` and `expiresAt` because availability checks need to quickly ignore expired holds.
-- `confirmedSoldQuantity` currently exists in API responses as a Phase 3 placeholder; confirmed bookings are not modeled yet.
+- `confirmedSoldQuantity` is currently derived from confirmed reservation items. Dedicated booking tables can replace this source once the payment/booking phase is implemented.

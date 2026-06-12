@@ -82,7 +82,7 @@ Deliverables:
 - [x] Optional idempotency key for safe reservation retries
 - [x] 5-minute reservation expiry window
 - [x] Availability calculation that excludes active reservations
-- [ ] Availability calculation that excludes confirmed bookings
+- [x] Availability calculation that excludes confirmed bookings
 - [ ] PostgreSQL transaction around reservation creation
 - [ ] Row-level lock on the relevant ticket type during reservation creation
 - [ ] Redis integration for production-minded reservation support

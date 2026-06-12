@@ -49,6 +49,36 @@ async function createPendingReservation({
   });
 }
 
+async function createConfirmedReservation({
+  expiresAt,
+  quantity,
+  ticketTypeId,
+}: {
+  expiresAt: Date;
+  quantity: number;
+  ticketTypeId: string;
+}) {
+  const customer = await prisma.user.findUniqueOrThrow({
+    where: {
+      email: CUSTOMER_EMAIL,
+    },
+  });
+
+  return prisma.reservation.create({
+    data: {
+      expiresAt,
+      status: ReservationStatus.confirmed,
+      userId: customer.id,
+      items: {
+        create: {
+          quantity,
+          ticketTypeId,
+        },
+      },
+    },
+  });
+}
+
 describe("foundation API smoke tests", () => {
   it("returns health status", async () => {
     const response = await request(app).get("/health");
@@ -158,6 +188,37 @@ describe("foundation API smoke tests", () => {
       expect(updatedTicketType).toEqual(
         expect.objectContaining({
           availableQuantity: ticketType.availableQuantity,
+          reservedQuantity: ticketType.reservedQuantity,
+        }),
+      );
+    } finally {
+      await prisma.reservation.delete({
+        where: {
+          id: reservation.id,
+        },
+      });
+    }
+  });
+
+  it("reduces ticket availability for confirmed reservations", async () => {
+    const { eventId, ticketType } = await getFirstEventTicketType();
+    const reservation = await createConfirmedReservation({
+      expiresAt: new Date(Date.now() - 5 * 60 * 1000),
+      quantity: 2,
+      ticketTypeId: ticketType.id,
+    });
+
+    try {
+      const response = await request(app).get(`/events/${eventId}`);
+      const updatedTicketType = response.body.data.ticketTypes.find(
+        (candidate: { id: string }) => candidate.id === ticketType.id,
+      );
+
+      expect(response.status).toBe(200);
+      expect(updatedTicketType).toEqual(
+        expect.objectContaining({
+          availableQuantity: ticketType.availableQuantity - 2,
+          confirmedSoldQuantity: ticketType.confirmedSoldQuantity + 2,
           reservedQuantity: ticketType.reservedQuantity,
         }),
       );
