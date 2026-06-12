@@ -76,7 +76,7 @@ Correctness rule:
 
 Deliverables:
 
-- [ ] Ticket quantity selection for current ticket types
+- [x] Ticket quantity selection for current ticket types
 - [x] Reservation and reservation item tables
 - [x] Reservation creation API
 - [x] Optional idempotency key for safe reservation retries

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { type EventDetail, getEvent } from "../api/events";
+import { createReservation } from "../api/reservations";
 import { ErrorState } from "../components/ErrorState";
 import { LoadingState } from "../components/LoadingState";
 
@@ -51,14 +52,83 @@ export function EventDetailScreen({ eventId, onBack }: EventDetailScreenProps) {
         ) : errorMessage ? (
           <ErrorState message={errorMessage} onRetry={loadEvent} />
         ) : event ? (
-          <EventDetailContent event={event} />
+          <EventDetailContent event={event} onReservationSettled={loadEvent} />
         ) : null}
       </ScrollView>
     </SafeAreaView>
   );
 }
 
-function EventDetailContent({ event }: { event: EventDetail }) {
+function EventDetailContent({
+  event,
+  onReservationSettled,
+}: {
+  event: EventDetail;
+  onReservationSettled: () => Promise<void>;
+}) {
+  const [selectedQuantities, setSelectedQuantities] = useState<
+    Record<string, number>
+  >({});
+  const [isReserving, setIsReserving] = useState(false);
+  const [reservationMessage, setReservationMessage] = useState<string | null>(
+    null,
+  );
+  const [reservationError, setReservationError] = useState<string | null>(null);
+
+  const selectedItems = event.ticketTypes
+    .map((ticketType) => ({
+      ticketTypeId: ticketType.id,
+      quantity: selectedQuantities[ticketType.id] ?? 0,
+    }))
+    .filter((item) => item.quantity > 0);
+
+  const selectedTicketCount = selectedItems.reduce(
+    (sum, item) => sum + item.quantity,
+    0,
+  );
+  const selectedTotalCents = event.ticketTypes.reduce(
+    (sum, ticketType) =>
+      sum + (selectedQuantities[ticketType.id] ?? 0) * ticketType.priceCents,
+    0,
+  );
+  const currency = event.ticketTypes[0]?.currency ?? "USD";
+
+  function updateTicketQuantity(ticketTypeId: string, nextQuantity: number) {
+    setReservationError(null);
+    setReservationMessage(null);
+    setSelectedQuantities((current) => ({
+      ...current,
+      [ticketTypeId]: nextQuantity,
+    }));
+  }
+
+  async function handleReserveTickets() {
+    if (selectedItems.length === 0 || isReserving) {
+      return;
+    }
+
+    setIsReserving(true);
+    setReservationError(null);
+    setReservationMessage(null);
+
+    try {
+      const reservation = await createReservation(selectedItems);
+      setSelectedQuantities({});
+      setReservationMessage(
+        `Reserved ${selectedTicketCount} ticket${
+          selectedTicketCount === 1 ? "" : "s"
+        } until ${formatTime(reservation.expiresAt)}.`,
+      );
+    } catch (error) {
+      setReservationError(
+        error instanceof Error ? error.message : "Unable to reserve tickets.",
+      );
+    } finally {
+      setIsReserving(false);
+      await onReservationSettled();
+    }
+  }
+
   return (
     <View>
       <Text style={styles.category}>{event.category}</Text>
@@ -97,11 +167,96 @@ function EventDetailContent({ event }: { event: EventDetail }) {
                 </Text>
               ) : null}
             </View>
-            <Text style={styles.ticketPrice}>
-              {formatPrice(ticketType.priceCents, ticketType.currency)}
-            </Text>
+            <View style={styles.ticketActions}>
+              <Text style={styles.ticketPrice}>
+                {formatPrice(ticketType.priceCents, ticketType.currency)}
+              </Text>
+              <View style={styles.quantityControl}>
+                <Pressable
+                  accessibilityLabel={`Decrease ${ticketType.name} quantity`}
+                  accessibilityRole="button"
+                  disabled={
+                    isReserving ||
+                    (selectedQuantities[ticketType.id] ?? 0) === 0
+                  }
+                  onPress={() =>
+                    updateTicketQuantity(
+                      ticketType.id,
+                      Math.max(0, (selectedQuantities[ticketType.id] ?? 0) - 1),
+                    )
+                  }
+                  style={[
+                    styles.quantityButton,
+                    (isReserving ||
+                      (selectedQuantities[ticketType.id] ?? 0) === 0) &&
+                      styles.disabledButton,
+                  ]}
+                >
+                  <Text style={styles.quantityButtonText}>-</Text>
+                </Pressable>
+                <Text style={styles.quantityValue}>
+                  {selectedQuantities[ticketType.id] ?? 0}
+                </Text>
+                <Pressable
+                  accessibilityLabel={`Increase ${ticketType.name} quantity`}
+                  accessibilityRole="button"
+                  disabled={
+                    isReserving ||
+                    (selectedQuantities[ticketType.id] ?? 0) >=
+                      ticketType.availableQuantity
+                  }
+                  onPress={() =>
+                    updateTicketQuantity(
+                      ticketType.id,
+                      Math.min(
+                        ticketType.availableQuantity,
+                        (selectedQuantities[ticketType.id] ?? 0) + 1,
+                      ),
+                    )
+                  }
+                  style={[
+                    styles.quantityButton,
+                    (isReserving ||
+                      (selectedQuantities[ticketType.id] ?? 0) >=
+                        ticketType.availableQuantity) &&
+                      styles.disabledButton,
+                  ]}
+                >
+                  <Text style={styles.quantityButtonText}>+</Text>
+                </Pressable>
+              </View>
+            </View>
           </View>
         ))}
+        <View style={styles.reservationPanel}>
+          <View>
+            <Text style={styles.summaryLabel}>Selected</Text>
+            <Text style={styles.summaryValue}>
+              {selectedTicketCount} ticket{selectedTicketCount === 1 ? "" : "s"}{" "}
+              - {formatPrice(selectedTotalCents, currency)}
+            </Text>
+          </View>
+          <Pressable
+            accessibilityRole="button"
+            disabled={isReserving || selectedItems.length === 0}
+            onPress={handleReserveTickets}
+            style={[
+              styles.reserveButton,
+              (isReserving || selectedItems.length === 0) &&
+                styles.disabledReserveButton,
+            ]}
+          >
+            <Text style={styles.reserveButtonText}>
+              {isReserving ? "Reserving..." : "Reserve tickets"}
+            </Text>
+          </Pressable>
+        </View>
+        {reservationMessage ? (
+          <Text style={styles.reservationSuccess}>{reservationMessage}</Text>
+        ) : null}
+        {reservationError ? (
+          <Text style={styles.reservationError}>{reservationError}</Text>
+        ) : null}
       </View>
     </View>
   );
@@ -122,6 +277,13 @@ function formatPrice(priceCents: number, currency: string) {
     currency,
     style: "currency",
   }).format(priceCents / 100);
+}
+
+function formatTime(value: string) {
+  return new Intl.DateTimeFormat("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(new Date(value));
 }
 
 const styles = StyleSheet.create({
@@ -177,6 +339,83 @@ const styles = StyleSheet.create({
     fontWeight: "900",
     marginBottom: 14,
   },
+  disabledButton: {
+    opacity: 0.35,
+  },
+  disabledReserveButton: {
+    backgroundColor: "#9fb7af",
+  },
+  quantityButton: {
+    alignItems: "center",
+    backgroundColor: "#1f6f5b",
+    borderRadius: 8,
+    height: 34,
+    justifyContent: "center",
+    width: 34,
+  },
+  quantityButtonText: {
+    color: "#ffffff",
+    fontSize: 20,
+    fontWeight: "900",
+    lineHeight: 22,
+  },
+  quantityControl: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 10,
+    marginTop: 12,
+  },
+  quantityValue: {
+    color: "#10231e",
+    fontSize: 17,
+    fontWeight: "900",
+    minWidth: 20,
+    textAlign: "center",
+  },
+  reservationError: {
+    color: "#9b1c1c",
+    fontSize: 14,
+    fontWeight: "700",
+    marginTop: 12,
+  },
+  reservationPanel: {
+    alignItems: "center",
+    backgroundColor: "#e7f3ef",
+    borderRadius: 8,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 8,
+    padding: 16,
+  },
+  reservationSuccess: {
+    color: "#1f6f5b",
+    fontSize: 14,
+    fontWeight: "800",
+    marginTop: 12,
+  },
+  reserveButton: {
+    backgroundColor: "#1f6f5b",
+    borderRadius: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  reserveButtonText: {
+    color: "#ffffff",
+    fontSize: 14,
+    fontWeight: "900",
+  },
+  summaryLabel: {
+    color: "#557169",
+    fontSize: 12,
+    fontWeight: "900",
+    textTransform: "uppercase",
+  },
+  summaryValue: {
+    color: "#10231e",
+    fontSize: 16,
+    fontWeight: "900",
+    marginTop: 4,
+  },
   ticketCapacity: {
     color: "#6f8580",
     fontSize: 13,
@@ -201,6 +440,7 @@ const styles = StyleSheet.create({
     color: "#10231e",
     fontSize: 17,
     fontWeight: "900",
+    textAlign: "right",
   },
   ticketReserved: {
     color: "#9b5c18",
@@ -218,6 +458,9 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     marginBottom: 12,
     padding: 16,
+  },
+  ticketActions: {
+    alignItems: "flex-end",
   },
   ticketSection: {
     marginTop: 28,

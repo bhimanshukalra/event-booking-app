@@ -1,6 +1,4 @@
-const API_URL =
-  process.env.EXPO_PUBLIC_API_URL?.replace(/\/$/, "") ??
-  "http://localhost:4000";
+import { API_URL } from "./config";
 
 export type AvailabilityStatus = "available" | "sold_out";
 
