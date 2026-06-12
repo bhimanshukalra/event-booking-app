@@ -1,10 +1,13 @@
 import { ReservationStatus } from "../../generated/prisma/enums";
 import { prisma } from "../../config/prisma";
+import type { Prisma } from "../../generated/prisma/client";
 
 type TicketTypeCapacity = {
   id: string;
   capacity: number;
 };
+
+type PrismaReader = typeof prisma | Prisma.TransactionClient;
 
 export type TicketTypeAvailability = {
   availableQuantity: number;
@@ -16,6 +19,7 @@ export type TicketTypeAvailability = {
 export async function getTicketTypeAvailability(
   ticketTypes: TicketTypeCapacity[],
   now = new Date(),
+  client: PrismaReader = prisma,
 ) {
   const ticketTypeIds = ticketTypes.map((ticketType) => ticketType.id);
 
@@ -23,7 +27,7 @@ export async function getTicketTypeAvailability(
     return new Map<string, TicketTypeAvailability>();
   }
 
-  const activeReservationCounts = await prisma.reservationItem.groupBy({
+  const activeReservationCounts = await client.reservationItem.groupBy({
     by: ["ticketTypeId"],
     where: {
       reservation: {
@@ -41,7 +45,7 @@ export async function getTicketTypeAvailability(
     },
   });
 
-  const confirmedReservationCounts = await prisma.reservationItem.groupBy({
+  const confirmedReservationCounts = await client.reservationItem.groupBy({
     by: ["ticketTypeId"],
     where: {
       reservation: {

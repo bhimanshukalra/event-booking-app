@@ -109,71 +109,76 @@ export async function createReservation(
   const ticketTypeIds = requestedItems.map((item) => item.ticketTypeId);
   const now = new Date();
 
-  const ticketTypes = await prisma.ticketType.findMany({
-    where: {
-      id: {
-        in: ticketTypeIds,
-      },
-      event: {
-        startsAt: {
-          gte: now,
+  const reservation = await prisma.$transaction(async (tx) => {
+    const ticketTypes = await tx.ticketType.findMany({
+      where: {
+        id: {
+          in: ticketTypeIds,
         },
-        status: EventStatus.published,
+        event: {
+          startsAt: {
+            gte: now,
+          },
+          status: EventStatus.published,
+        },
       },
-    },
-    select: {
-      id: true,
-      capacity: true,
-    },
-  });
+      select: {
+        id: true,
+        capacity: true,
+      },
+    });
 
-  if (ticketTypes.length !== ticketTypeIds.length) {
-    throw new HttpError(400, "One or more ticket types are unavailable");
-  }
-
-  const availabilityByTicketTypeId =
-    await getTicketTypeAvailability(ticketTypes);
-
-  for (const item of requestedItems) {
-    const availability = availabilityByTicketTypeId.get(item.ticketTypeId);
-
-    if (!availability || item.quantity > availability.availableQuantity) {
-      throw new HttpError(409, "Insufficient ticket availability");
+    if (ticketTypes.length !== ticketTypeIds.length) {
+      throw new HttpError(400, "One or more ticket types are unavailable");
     }
-  }
 
-  const reservation = await prisma.reservation.create({
-    data: {
-      expiresAt: new Date(now.getTime() + RESERVATION_EXPIRY_MS),
-      status: ReservationStatus.pending,
-      userId,
-      ...(input.idempotencyKey
-        ? {
-            idempotencyKey: input.idempotencyKey,
-          }
-        : {}),
-      items: {
-        create: requestedItems.map((item) => ({
-          quantity: item.quantity,
-          ticketTypeId: item.ticketTypeId,
-        })),
+    const availabilityByTicketTypeId = await getTicketTypeAvailability(
+      ticketTypes,
+      now,
+      tx,
+    );
+
+    for (const item of requestedItems) {
+      const availability = availabilityByTicketTypeId.get(item.ticketTypeId);
+
+      if (!availability || item.quantity > availability.availableQuantity) {
+        throw new HttpError(409, "Insufficient ticket availability");
+      }
+    }
+
+    return tx.reservation.create({
+      data: {
+        expiresAt: new Date(now.getTime() + RESERVATION_EXPIRY_MS),
+        status: ReservationStatus.pending,
+        userId,
+        ...(input.idempotencyKey
+          ? {
+              idempotencyKey: input.idempotencyKey,
+            }
+          : {}),
+        items: {
+          create: requestedItems.map((item) => ({
+            quantity: item.quantity,
+            ticketTypeId: item.ticketTypeId,
+          })),
+        },
       },
-    },
-    include: {
-      items: {
-        include: {
-          ticketType: {
-            select: {
-              eventId: true,
-              name: true,
+      include: {
+        items: {
+          include: {
+            ticketType: {
+              select: {
+                eventId: true,
+                name: true,
+              },
             },
           },
-        },
-        orderBy: {
-          createdAt: "asc",
+          orderBy: {
+            createdAt: "asc",
+          },
         },
       },
-    },
+    });
   });
 
   return {

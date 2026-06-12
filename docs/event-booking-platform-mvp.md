@@ -83,7 +83,7 @@ Deliverables:
 - [x] 5-minute reservation expiry window
 - [x] Availability calculation that excludes active reservations
 - [x] Availability calculation that excludes confirmed bookings
-- [ ] PostgreSQL transaction around reservation creation
+- [x] PostgreSQL transaction around reservation creation
 - [ ] Row-level lock on the relevant ticket type during reservation creation
 - [ ] Redis integration for production-minded reservation support
 - [ ] Redis TTL or sorted-set helper for reservation expiry tracking
