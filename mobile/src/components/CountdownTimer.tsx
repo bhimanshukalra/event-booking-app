@@ -1,38 +1,97 @@
-import { useEffect, useMemo, useState } from "react";
-import { Text, View } from "react-native";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { View, Text } from "react-native";
+import Svg, { Circle } from "react-native-svg";
+
+interface CountdownProgressRingProps {
+  size?: number;
+  strokeWidth?: number;
+  progress: number; // 0 -> 1
+  children: React.ReactNode;
+}
+
+function CountdownProgressRing({
+  size = 224,
+  strokeWidth = 18,
+  progress,
+  children,
+}: CountdownProgressRingProps) {
+  const radius = size / 2 - strokeWidth / 2;
+  const circumference = 2 * Math.PI * radius;
+
+  return (
+    <View
+      className="items-center justify-center rounded-full bg-white shadow-lg"
+      style={{
+        width: size,
+        height: size,
+      }}
+    >
+      <Svg
+        width={size}
+        height={size}
+        style={{
+          position: "absolute",
+        }}
+      >
+        {/* Background Ring */}
+        <Circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          stroke="#DBEAFE"
+          strokeWidth={strokeWidth}
+          fill="none"
+        />
+
+        {/* Progress Ring */}
+        <Circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          stroke="#2563EB"
+          strokeWidth={strokeWidth}
+          fill="none"
+          strokeLinecap="round"
+          strokeDasharray={circumference}
+          strokeDashoffset={circumference * (1 - progress)}
+          rotation="-90"
+          origin={`${size / 2}, ${size / 2}`}
+        />
+      </Svg>
+
+      <View className="h-32 w-32 items-center justify-center rounded-full bg-white">
+        {children}
+      </View>
+    </View>
+  );
+}
 
 interface CountdownTimerProps {
-  /**
-   * Timestamp in milliseconds or a Date object indicating when the countdown ends.
-   */
   expiresAt: number | Date;
-
-  /**
-   * Called once when the countdown reaches zero.
-   */
-  onExpire?: () => void;
-
-  /**
-   * Optional text displayed below the timer.
-   */
+  startedAt?: number | Date;
   label?: string;
-
-  /**
-   * Optional size of the outer circle.
-   * Defaults to 224 (h-56/w-56).
-   */
-  size?: number;
+  onExpire?: () => void;
 }
 
 export function CountdownTimer({
   expiresAt,
-  onExpire,
+  startedAt = Date.now(),
   label = "Time Remaining",
+  onExpire,
 }: CountdownTimerProps) {
+  const hasExpired = useRef(false);
+
+  const startTime = useMemo(
+    () => (startedAt instanceof Date ? startedAt.getTime() : startedAt),
+    [startedAt],
+  );
+
   const endTime = useMemo(
     () => (expiresAt instanceof Date ? expiresAt.getTime() : expiresAt),
     [expiresAt],
   );
+
+  const totalDuration = Math.max(1, endTime - startTime);
 
   const getRemaining = () => Math.max(0, endTime - Date.now());
 
@@ -44,7 +103,8 @@ export function CountdownTimer({
 
       setRemaining(value);
 
-      if (value <= 0) {
+      if (value <= 0 && !hasExpired.current) {
+        hasExpired.current = true;
         clearInterval(interval);
         onExpire?.();
       }
@@ -55,35 +115,18 @@ export function CountdownTimer({
 
   const totalSeconds = Math.ceil(remaining / 1000);
 
-  const hours = Math.floor(totalSeconds / 3600);
-  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const minutes = Math.floor(totalSeconds / 60);
   const seconds = totalSeconds % 60;
 
-  const formattedTime =
-    hours > 0
-      ? `${hours}:${minutes.toString().padStart(2, "0")}:${seconds
-          .toString()
-          .padStart(2, "0")}`
-      : `${minutes}:${seconds.toString().padStart(2, "0")}`;
+  const formattedTime = `${minutes}:${seconds.toString().padStart(2, "0")}`;
+
+  const progress = remaining / totalDuration;
 
   return (
-    <View className="items-center justify-center">
-      {/* Outer White Circle */}
-      <View className="h-56 w-56 items-center justify-center rounded-full bg-white shadow-lg">
-        {/* Middle Blue Circle */}
-        <View className="h-44 w-44 items-center justify-center rounded-full bg-blue-600">
-          {/* Inner White Circle */}
-          <View className="h-32 w-32 items-center justify-center rounded-full bg-white px-3">
-            <Text className="text-3xl font-bold text-gray-900">
-              {formattedTime}
-            </Text>
+    <CountdownProgressRing progress={progress}>
+      <Text className="text-3xl font-bold text-gray-900">{formattedTime}</Text>
 
-            <Text className="mt-1 text-center text-xs text-gray-500">
-              {label}
-            </Text>
-          </View>
-        </View>
-      </View>
-    </View>
+      <Text className="mt-1 text-center text-xs text-gray-500">{label}</Text>
+    </CountdownProgressRing>
   );
 }
