@@ -3,6 +3,7 @@ import { prisma } from "../../config/prisma";
 import { Prisma } from "../../generated/prisma/client";
 import { HttpError } from "../../shared/errors/http-error";
 import { getTicketTypeAvailability } from "../events/availability.service";
+import { trackReservationExpiry } from "./reservation-expiry-tracker";
 import type { CreateReservationInput } from "./reservations.validation";
 
 const RESERVATION_EXPIRY_MS = 5 * 60 * 1000;
@@ -178,6 +179,10 @@ export async function createReservation(
         },
       },
     });
+  });
+
+  trackReservationExpiry(reservation).catch((error) => {
+    console.error("Failed to track reservation expiry in Redis", error);
   });
 
   return {

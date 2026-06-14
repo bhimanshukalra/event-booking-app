@@ -86,7 +86,7 @@ Deliverables:
 - [x] PostgreSQL transaction around reservation creation
 - [x] Row-level lock on the relevant ticket type during reservation creation
 - [x] Redis integration for production-minded reservation support
-- [ ] Redis TTL or sorted-set helper for reservation expiry tracking
+- [x] Redis TTL or sorted-set helper for reservation expiry tracking
 - [ ] Redis-backed short-lived duplicate request guard for reservation attempts
 - [ ] Optional Redis inventory count cache with clear invalidation rules
 - [ ] Optional Redis rate limit for reservation endpoints
