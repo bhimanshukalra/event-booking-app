@@ -84,7 +84,7 @@ Deliverables:
 - [x] Availability calculation that excludes active reservations
 - [x] Availability calculation that excludes confirmed bookings
 - [x] PostgreSQL transaction around reservation creation
-- [ ] Row-level lock on the relevant ticket type during reservation creation
+- [x] Row-level lock on the relevant ticket type during reservation creation
 - [ ] Redis integration for production-minded reservation support
 - [ ] Redis TTL or sorted-set helper for reservation expiry tracking
 - [ ] Redis-backed short-lived duplicate request guard for reservation attempts

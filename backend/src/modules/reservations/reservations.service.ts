@@ -1,5 +1,6 @@
 import { EventStatus, ReservationStatus } from "../../generated/prisma/enums";
 import { prisma } from "../../config/prisma";
+import { Prisma } from "../../generated/prisma/client";
 import { HttpError } from "../../shared/errors/http-error";
 import { getTicketTypeAvailability } from "../events/availability.service";
 import type { CreateReservationInput } from "./reservations.validation";
@@ -20,6 +21,11 @@ type ReservationWithItems = {
       name: string;
     };
   }>;
+};
+
+type LockedTicketType = {
+  id: string;
+  capacity: number;
 };
 
 function mapReservation(reservation: ReservationWithItems) {
@@ -110,23 +116,16 @@ export async function createReservation(
   const now = new Date();
 
   const reservation = await prisma.$transaction(async (tx) => {
-    const ticketTypes = await tx.ticketType.findMany({
-      where: {
-        id: {
-          in: ticketTypeIds,
-        },
-        event: {
-          startsAt: {
-            gte: now,
-          },
-          status: EventStatus.published,
-        },
-      },
-      select: {
-        id: true,
-        capacity: true,
-      },
-    });
+    const ticketTypes = await tx.$queryRaw<LockedTicketType[]>`
+      SELECT tt.id, tt.capacity
+      FROM "ticket_types" tt
+      INNER JOIN "events" e ON e.id = tt."eventId"
+      WHERE tt.id IN (${Prisma.join(ticketTypeIds)})
+        AND e."startsAt" >= ${now}
+        AND e.status = ${EventStatus.published}::"EventStatus"
+      ORDER BY tt.id
+      FOR UPDATE OF tt
+    `;
 
     if (ticketTypes.length !== ticketTypeIds.length) {
       throw new HttpError(400, "One or more ticket types are unavailable");
