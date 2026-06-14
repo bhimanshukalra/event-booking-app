@@ -7,6 +7,7 @@ const envSchema = z.object({
     .enum(["development", "test", "production"])
     .default("development"),
   PORT: z.coerce.number().int().positive().default(4000),
+  REDIS_URL: z.string().trim().min(1).optional(),
 });
 
 const parsedEnv = envSchema.safeParse(process.env);

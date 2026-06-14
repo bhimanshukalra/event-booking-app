@@ -16,10 +16,20 @@ mobile/   Expo + React Native + TypeScript app
 - Node.js 24 LTS or another Prisma-supported Node version
 - pnpm 11
 - PostgreSQL
+- Redis is optional for Phase 2 reservation support
 
 ## Backend Setup
 
 Create `backend/.env` from the example and set `DATABASE_URL`.
+
+Optional backend environment variables:
+
+```text
+PORT=4000
+REDIS_URL=redis://localhost:6379
+```
+
+Redis support is best-effort at this stage. PostgreSQL remains the source of truth for reservation correctness if Redis is unavailable or not configured.
 
 ```bash
 cd backend
