@@ -87,7 +87,7 @@ Deliverables:
 - [x] Row-level lock on the relevant ticket type during reservation creation
 - [x] Redis integration for production-minded reservation support
 - [x] Redis TTL or sorted-set helper for reservation expiry tracking
-- [ ] Redis-backed short-lived duplicate request guard for reservation attempts
+- [x] Redis-backed short-lived duplicate request guard for reservation attempts
 - [ ] Optional Redis inventory count cache with clear invalidation rules
 - [ ] Optional Redis rate limit for reservation endpoints
 - [x] Conflict response when requested quantity is no longer available

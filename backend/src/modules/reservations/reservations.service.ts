@@ -4,6 +4,10 @@ import { Prisma } from "../../generated/prisma/client";
 import { HttpError } from "../../shared/errors/http-error";
 import { getTicketTypeAvailability } from "../events/availability.service";
 import { trackReservationExpiry } from "./reservation-expiry-tracker";
+import {
+  acquireReservationRequestGuard,
+  releaseReservationRequestGuard,
+} from "./reservation-request-guard";
 import type { CreateReservationInput } from "./reservations.validation";
 
 const RESERVATION_EXPIRY_MS = 5 * 60 * 1000;
@@ -115,78 +119,103 @@ export async function createReservation(
   const requestedItems = mergeRequestedItems(input.items);
   const ticketTypeIds = requestedItems.map((item) => item.ticketTypeId);
   const now = new Date();
+  let requestGuardKey: string | null = null;
+  let shouldReleaseRequestGuard = false;
 
-  const reservation = await prisma.$transaction(async (tx) => {
-    const ticketTypes = await tx.$queryRaw<LockedTicketType[]>`
-      SELECT tt.id, tt.capacity
-      FROM "ticket_types" tt
-      INNER JOIN "events" e ON e.id = tt."eventId"
-      WHERE tt.id IN (${Prisma.join(ticketTypeIds)})
-        AND e."startsAt" >= ${now}
-        AND e.status = ${EventStatus.published}::"EventStatus"
-      ORDER BY tt.id
-      FOR UPDATE OF tt
-    `;
+  try {
+    const requestGuard = await acquireReservationRequestGuard({
+      items: requestedItems,
+      userId,
+    });
 
-    if (ticketTypes.length !== ticketTypeIds.length) {
-      throw new HttpError(400, "One or more ticket types are unavailable");
-    }
+    if (requestGuard) {
+      requestGuardKey = requestGuard.key;
 
-    const availabilityByTicketTypeId = await getTicketTypeAvailability(
-      ticketTypes,
-      now,
-      tx,
-    );
-
-    for (const item of requestedItems) {
-      const availability = availabilityByTicketTypeId.get(item.ticketTypeId);
-
-      if (!availability || item.quantity > availability.availableQuantity) {
-        throw new HttpError(409, "Insufficient ticket availability");
+      if (!requestGuard.acquired) {
+        throw new HttpError(409, "Duplicate reservation request in progress");
       }
+
+      shouldReleaseRequestGuard = true;
     }
 
-    return tx.reservation.create({
-      data: {
-        expiresAt: new Date(now.getTime() + RESERVATION_EXPIRY_MS),
-        status: ReservationStatus.pending,
-        userId,
-        ...(input.idempotencyKey
-          ? {
-              idempotencyKey: input.idempotencyKey,
-            }
-          : {}),
-        items: {
-          create: requestedItems.map((item) => ({
-            quantity: item.quantity,
-            ticketTypeId: item.ticketTypeId,
-          })),
+    const reservation = await prisma.$transaction(async (tx) => {
+      const ticketTypes = await tx.$queryRaw<LockedTicketType[]>`
+        SELECT tt.id, tt.capacity
+        FROM "ticket_types" tt
+        INNER JOIN "events" e ON e.id = tt."eventId"
+        WHERE tt.id IN (${Prisma.join(ticketTypeIds)})
+          AND e."startsAt" >= ${now}
+          AND e.status = ${EventStatus.published}::"EventStatus"
+        ORDER BY tt.id
+        FOR UPDATE OF tt
+      `;
+
+      if (ticketTypes.length !== ticketTypeIds.length) {
+        throw new HttpError(400, "One or more ticket types are unavailable");
+      }
+
+      const availabilityByTicketTypeId = await getTicketTypeAvailability(
+        ticketTypes,
+        now,
+        tx,
+      );
+
+      for (const item of requestedItems) {
+        const availability = availabilityByTicketTypeId.get(item.ticketTypeId);
+
+        if (!availability || item.quantity > availability.availableQuantity) {
+          throw new HttpError(409, "Insufficient ticket availability");
+        }
+      }
+
+      return tx.reservation.create({
+        data: {
+          expiresAt: new Date(now.getTime() + RESERVATION_EXPIRY_MS),
+          status: ReservationStatus.pending,
+          userId,
+          ...(input.idempotencyKey
+            ? {
+                idempotencyKey: input.idempotencyKey,
+              }
+            : {}),
+          items: {
+            create: requestedItems.map((item) => ({
+              quantity: item.quantity,
+              ticketTypeId: item.ticketTypeId,
+            })),
+          },
         },
-      },
-      include: {
-        items: {
-          include: {
-            ticketType: {
-              select: {
-                eventId: true,
-                name: true,
+        include: {
+          items: {
+            include: {
+              ticketType: {
+                select: {
+                  eventId: true,
+                  name: true,
+                },
               },
             },
-          },
-          orderBy: {
-            createdAt: "asc",
+            orderBy: {
+              createdAt: "asc",
+            },
           },
         },
-      },
+      });
     });
-  });
 
-  trackReservationExpiry(reservation).catch((error) => {
-    console.error("Failed to track reservation expiry in Redis", error);
-  });
+    trackReservationExpiry(reservation).catch((error) => {
+      console.error("Failed to track reservation expiry in Redis", error);
+    });
 
-  return {
-    created: true,
-    data: mapReservation(reservation),
-  };
+    return {
+      created: true,
+      data: mapReservation(reservation),
+    };
+  } finally {
+    if (shouldReleaseRequestGuard) {
+      await releaseReservationRequestGuard(requestGuardKey).catch((error) => {
+        console.error("Failed to release reservation request guard", error);
+      });
+    }
+  }
 }
