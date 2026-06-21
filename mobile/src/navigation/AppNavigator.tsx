@@ -143,6 +143,7 @@ export function AppNavigator() {
 
   return (
     <EventListScreen
+      bookingCount={bookings.length}
       onSelectEvent={(eventId) => {
         setSelectedEventId(eventId);
         setActiveView("eventDetail");

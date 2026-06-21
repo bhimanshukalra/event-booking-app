@@ -13,11 +13,13 @@ import { LoadingState } from "../components/LoadingState";
 import { type EventListItem, getEvents } from "../api/events";
 
 type EventListScreenProps = {
+  bookingCount: number;
   onSelectEvent: (eventId: string) => void;
   onViewBookings: () => void;
 };
 
 export function EventListScreen({
+  bookingCount,
   onSelectEvent,
   onViewBookings,
 }: EventListScreenProps) {
@@ -69,7 +71,7 @@ export function EventListScreen({
               className="rounded-lg border border-[#a8c7bd] px-[14px] py-2.5"
             >
               <Text className="text-sm font-extrabold text-[#1f6f5b]">
-                My bookings
+                My bookings{bookingCount > 0 ? ` (${bookingCount})` : ""}
               </Text>
             </Pressable>
           </View>
