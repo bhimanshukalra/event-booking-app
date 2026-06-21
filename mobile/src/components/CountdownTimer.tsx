@@ -1,70 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { View, Text } from "react-native";
-import Svg, { Circle } from "react-native-svg";
-
-interface CountdownProgressRingProps {
-  size?: number;
-  strokeWidth?: number;
-  progress: number; // 0 -> 1
-  children: React.ReactNode;
-}
-
-function CountdownProgressRing({
-  size = 224,
-  strokeWidth = 18,
-  progress,
-  children,
-}: CountdownProgressRingProps) {
-  const radius = size / 2 - strokeWidth / 2;
-  const circumference = 2 * Math.PI * radius;
-
-  return (
-    <View
-      className="items-center justify-center rounded-full bg-white shadow-lg"
-      style={{
-        width: size,
-        height: size,
-      }}
-    >
-      <Svg
-        width={size}
-        height={size}
-        style={{
-          position: "absolute",
-        }}
-      >
-        {/* Background Ring */}
-        <Circle
-          cx={size / 2}
-          cy={size / 2}
-          r={radius}
-          stroke="#DBEAFE"
-          strokeWidth={strokeWidth}
-          fill="none"
-        />
-
-        {/* Progress Ring */}
-        <Circle
-          cx={size / 2}
-          cy={size / 2}
-          r={radius}
-          stroke="#2563EB"
-          strokeWidth={strokeWidth}
-          fill="none"
-          strokeLinecap="round"
-          strokeDasharray={circumference}
-          strokeDashoffset={circumference * (1 - progress)}
-          rotation="-90"
-          origin={`${size / 2}, ${size / 2}`}
-        />
-      </Svg>
-
-      <View className="h-32 w-32 items-center justify-center rounded-full bg-white">
-        {children}
-      </View>
-    </View>
-  );
-}
+import { Text, View } from "react-native";
 
 interface CountdownTimerProps {
   expiresAt: number | Date;
@@ -98,6 +33,9 @@ export function CountdownTimer({
   const [remaining, setRemaining] = useState(getRemaining);
 
   useEffect(() => {
+    hasExpired.current = false;
+    setRemaining(getRemaining());
+
     const interval = setInterval(() => {
       const value = getRemaining();
 
@@ -120,13 +58,31 @@ export function CountdownTimer({
 
   const formattedTime = `${minutes}:${seconds.toString().padStart(2, "0")}`;
 
-  const progress = remaining / totalDuration;
+  const progress = Math.max(0, Math.min(remaining / totalDuration, 1));
 
   return (
-    <CountdownProgressRing progress={progress}>
-      <Text className="text-3xl font-bold text-gray-900">{formattedTime}</Text>
-
-      <Text className="mt-1 text-center text-xs text-gray-500">{label}</Text>
-    </CountdownProgressRing>
+    <View className="rounded-lg border border-[#cce0d9] bg-white p-4">
+      <View className="flex-row items-center justify-between gap-4">
+        <View className="flex-1">
+          <Text className="text-xs font-black uppercase text-[#557169]">
+            {label}
+          </Text>
+          <Text className="mt-1 text-[30px] font-black text-[#10231e]">
+            {formattedTime}
+          </Text>
+        </View>
+        <Text className="text-right text-xs font-bold text-[#557169]">
+          Hold expires soon
+        </Text>
+      </View>
+      <View className="mt-3 h-2 overflow-hidden rounded-full bg-[#d7e4df]">
+        <View
+          className="h-2 rounded-full bg-[#1f6f5b]"
+          style={{
+            width: `${progress * 100}%`,
+          }}
+        />
+      </View>
+    </View>
   );
 }
