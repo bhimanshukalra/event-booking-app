@@ -1,5 +1,5 @@
 import { ActivityIndicator, Text, View } from "react-native";
-import { colors } from "../theme/colors";
+import { colors } from "../theme";
 
 type LoadingStateProps = {
   label: string;

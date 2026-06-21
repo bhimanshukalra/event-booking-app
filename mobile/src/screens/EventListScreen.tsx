@@ -9,7 +9,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { EmptyState, ErrorState, LoadingState } from "../components";
 import { type EventListItem, getEvents } from "../api/events";
-import { colors } from "../theme/colors";
+import { colors } from "../theme";
 
 type EventListScreenProps = {
   bookingCount: number;
