@@ -1,8 +1,8 @@
-import { FlatList, Pressable, RefreshControl, Text, View } from "react-native";
+import { FlatList, RefreshControl, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { EmptyState, ErrorState, LoadingState } from "../../components";
 import { colors } from "../../theme";
-import { EventCard } from "./components";
+import { EventCard, EventListHeader } from "./components";
 import { useEventList } from "./useEventList";
 
 type EventListScreenProps = {
@@ -28,28 +28,10 @@ export function EventListScreen({
   return (
     <SafeAreaView className="flex-1 bg-app">
       <View className="flex-1 px-5">
-        <View className="pb-[22px] pt-7">
-          <View className="mb-5 flex-row justify-end">
-            <Pressable
-              accessibilityRole="button"
-              onPress={onViewBookings}
-              className="rounded-lg border border-border-muted px-[14px] py-2.5"
-            >
-              <Text className="text-sm font-extrabold text-brand">
-                My bookings{bookingCount > 0 ? ` (${bookingCount})` : ""}
-              </Text>
-            </Pressable>
-          </View>
-          <Text className="text-[13px] font-black uppercase text-brand">
-            Upcoming events
-          </Text>
-          <Text className="mt-2 text-[34px] font-black leading-[39px] text-ink">
-            Find your next seat
-          </Text>
-          <Text className="mt-2.5 text-base leading-[23px] text-muted">
-            Browse live inventory from the booking platform foundation API.
-          </Text>
-        </View>
+        <EventListHeader
+          bookingCount={bookingCount}
+          onViewBookings={onViewBookings}
+        />
 
         {isLoading ? (
           <LoadingState label="Loading events" />
