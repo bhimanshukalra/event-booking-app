@@ -1,15 +1,9 @@
-import { useCallback, useEffect, useState } from "react";
-import {
-  FlatList,
-  Pressable,
-  RefreshControl,
-  Text,
-  View,
-} from "react-native";
+import { FlatList, Pressable, RefreshControl, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { EmptyState, ErrorState, LoadingState } from "../components";
-import { type EventListItem, getEvents } from "../api/events";
-import { colors } from "../theme";
+import { type EventListItem } from "../../api/events";
+import { EmptyState, ErrorState, LoadingState } from "../../components";
+import { colors } from "../../theme";
+import { useEventList } from "./useEventList";
 
 type EventListScreenProps = {
   bookingCount: number;
@@ -22,42 +16,14 @@ export function EventListScreen({
   onSelectEvent,
   onViewBookings,
 }: EventListScreenProps) {
-  const [events, setEvents] = useState<EventListItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
-  const loadEvents = useCallback(
-    async (mode: "initial" | "refresh" = "initial") => {
-      if (mode === "refresh") {
-        setIsRefreshing(true);
-      } else {
-        setIsLoading(true);
-      }
-      setErrorMessage(null);
-
-      try {
-        setEvents(await getEvents());
-      } catch (error) {
-        setErrorMessage(
-          error instanceof Error ? error.message : "Unable to load events.",
-        );
-      } finally {
-        if (mode === "refresh") {
-          setIsRefreshing(false);
-        } else {
-          setIsLoading(false);
-        }
-      }
-    },
-    [],
-  );
-
-  const refreshEvents = useCallback(() => loadEvents("refresh"), [loadEvents]);
-
-  useEffect(() => {
-    void loadEvents();
-  }, [loadEvents]);
+  const {
+    errorMessage,
+    events,
+    isLoading,
+    isRefreshing,
+    loadEvents,
+    refreshEvents,
+  } = useEventList();
 
   return (
     <SafeAreaView className="flex-1 bg-app">
