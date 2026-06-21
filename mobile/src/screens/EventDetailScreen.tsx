@@ -2,7 +2,10 @@ import { useCallback, useEffect, useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { type EventDetail, getEvent } from "../api/events";
-import { createReservation } from "../api/reservations";
+import {
+  createReservation,
+  ReservationApiError,
+} from "../api/reservations";
 import { ErrorState } from "../components/ErrorState";
 import { LoadingState } from "../components/LoadingState";
 
@@ -99,18 +102,78 @@ function EventDetailContent({
     0,
   );
   const currency = event.ticketTypes[0]?.currency ?? "USD";
+  const hasUnavailableSelection = event.ticketTypes.some(
+    (ticketType) =>
+      (selectedQuantities[ticketType.id] ?? 0) > ticketType.availableQuantity,
+  );
+  const canReserve =
+    !isReserving && selectedItems.length > 0 && !hasUnavailableSelection;
+
+  useEffect(() => {
+    setSelectedQuantities((current) => {
+      let didChange = false;
+      const next: Record<string, number> = {};
+
+      for (const ticketType of event.ticketTypes) {
+        const currentQuantity = current[ticketType.id] ?? 0;
+        const clampedQuantity = Math.min(
+          Math.max(currentQuantity, 0),
+          ticketType.availableQuantity,
+        );
+
+        if (clampedQuantity !== currentQuantity) {
+          didChange = true;
+        }
+
+        if (clampedQuantity > 0) {
+          next[ticketType.id] = clampedQuantity;
+        }
+      }
+
+      if (Object.keys(current).length !== Object.keys(next).length) {
+        didChange = true;
+      }
+
+      return didChange ? next : current;
+    });
+  }, [event.ticketTypes]);
 
   function updateTicketQuantity(ticketTypeId: string, nextQuantity: number) {
+    const ticketType = event.ticketTypes.find(
+      (candidate) => candidate.id === ticketTypeId,
+    );
+
+    if (!ticketType || isReserving) {
+      return;
+    }
+
+    const clampedQuantity = Math.min(
+      Math.max(nextQuantity, 0),
+      ticketType.availableQuantity,
+    );
+
     setReservationError(null);
     setReservationMessage(null);
-    setSelectedQuantities((current) => ({
-      ...current,
-      [ticketTypeId]: nextQuantity,
-    }));
+    setSelectedQuantities((current) => {
+      const next = { ...current };
+
+      if (clampedQuantity === 0) {
+        delete next[ticketTypeId];
+      } else {
+        next[ticketTypeId] = clampedQuantity;
+      }
+
+      return next;
+    });
   }
 
   async function handleReserveTickets() {
-    if (selectedItems.length === 0 || isReserving) {
+    if (!canReserve) {
+      if (selectedItems.length > 0 && hasUnavailableSelection) {
+        setReservationError(
+          "Your selection is no longer available. Review the updated ticket counts and try again.",
+        );
+      }
       return;
     }
 
@@ -127,9 +190,7 @@ function EventDetailContent({
         } until ${formatTime(reservation.expiresAt)}.`,
       );
     } catch (error) {
-      setReservationError(
-        error instanceof Error ? error.message : "Unable to reserve tickets.",
-      );
+      setReservationError(getReservationErrorCopy(error));
     } finally {
       setIsReserving(false);
       await onReservationSettled();
@@ -167,95 +228,97 @@ function EventDetailContent({
         <Text className="mb-[14px] text-[22px] font-black text-[#10231e]">
           Tickets
         </Text>
-        {event.ticketTypes.map((ticketType) => (
-          <View
-            key={ticketType.id}
-            className="mb-3 flex-row items-start justify-between rounded-lg border border-[#d7e4df] bg-white p-4"
-          >
-            <View className="flex-1 pr-[14px]">
-              <Text className="text-[17px] font-extrabold text-[#10231e]">
-                {ticketType.name}
-              </Text>
-              {ticketType.description ? (
-                <Text className="mt-1.5 text-sm leading-5 text-[#557169]">
-                  {ticketType.description}
-                </Text>
-              ) : null}
-              <Text className="mt-1.5 text-[13px] text-[#6f8580]">
-                {ticketType.availableQuantity} available of{" "}
-                {ticketType.capacity} total
-              </Text>
-              {ticketType.reservedQuantity > 0 ? (
-                <Text className="mt-1 text-[13px] font-bold text-[#9b5c18]">
-                  {ticketType.reservedQuantity} temporarily held
-                </Text>
-              ) : null}
-            </View>
-            <View className="items-end">
-              <Text className="text-right text-[17px] font-black text-[#10231e]">
-                {formatPrice(ticketType.priceCents, ticketType.currency)}
-              </Text>
-              <View className="mt-3 flex-row items-center gap-2.5">
-                <Pressable
-                  accessibilityLabel={`Decrease ${ticketType.name} quantity`}
-                  accessibilityRole="button"
-                  disabled={
-                    isReserving ||
-                    (selectedQuantities[ticketType.id] ?? 0) === 0
-                  }
-                  onPress={() =>
-                    updateTicketQuantity(
-                      ticketType.id,
-                      Math.max(0, (selectedQuantities[ticketType.id] ?? 0) - 1),
-                    )
-                  }
-                  className={`h-[34px] w-[34px] items-center justify-center rounded-lg bg-[#1f6f5b] ${
-                    isReserving ||
-                    (selectedQuantities[ticketType.id] ?? 0) === 0
-                      ? "opacity-35"
-                      : ""
+        {event.ticketTypes.map((ticketType) => {
+          const selectedQuantity = selectedQuantities[ticketType.id] ?? 0;
+          const isSoldOut = ticketType.availableQuantity === 0;
+          const canDecrease = !isReserving && selectedQuantity > 0;
+          const canIncrease =
+            !isReserving &&
+            !isSoldOut &&
+            selectedQuantity < ticketType.availableQuantity;
+
+          return (
+            <View
+              key={ticketType.id}
+              className={`mb-3 flex-row items-start justify-between rounded-lg border p-4 ${
+                isSoldOut
+                  ? "border-[#ead4d4] bg-[#fff7f7]"
+                  : "border-[#d7e4df] bg-white"
+              }`}
+            >
+              <View className="flex-1 pr-[14px]">
+                <View className="flex-row flex-wrap items-center gap-2">
+                  <Text className="text-[17px] font-extrabold text-[#10231e]">
+                    {ticketType.name}
+                  </Text>
+                  {isSoldOut ? (
+                    <Text className="rounded-md bg-[#f0dada] px-2 py-1 text-[11px] font-black uppercase text-[#8a1f1f]">
+                      Sold out
+                    </Text>
+                  ) : null}
+                </View>
+                {ticketType.description ? (
+                  <Text className="mt-1.5 text-sm leading-5 text-[#557169]">
+                    {ticketType.description}
+                  </Text>
+                ) : null}
+                <Text
+                  className={`mt-1.5 text-[13px] ${
+                    isSoldOut ? "font-bold text-[#8a1f1f]" : "text-[#6f8580]"
                   }`}
                 >
-                  <Text className="text-[20px] font-black leading-[22px] text-white">
-                    -
-                  </Text>
-                </Pressable>
-                <Text className="min-w-5 text-center text-[17px] font-black text-[#10231e]">
-                  {selectedQuantities[ticketType.id] ?? 0}
+                  {ticketType.availableQuantity} available of{" "}
+                  {ticketType.capacity} total
                 </Text>
-                <Pressable
-                  accessibilityLabel={`Increase ${ticketType.name} quantity`}
-                  accessibilityRole="button"
-                  disabled={
-                    isReserving ||
-                    (selectedQuantities[ticketType.id] ?? 0) >=
-                      ticketType.availableQuantity
-                  }
-                  onPress={() =>
-                    updateTicketQuantity(
-                      ticketType.id,
-                      Math.min(
-                        ticketType.availableQuantity,
-                        (selectedQuantities[ticketType.id] ?? 0) + 1,
-                      ),
-                    )
-                  }
-                  className={`h-[34px] w-[34px] items-center justify-center rounded-lg bg-[#1f6f5b] ${
-                    isReserving ||
-                    (selectedQuantities[ticketType.id] ?? 0) >=
-                      ticketType.availableQuantity
-                      ? "opacity-35"
-                      : ""
-                  }`}
-                >
-                  <Text className="text-[20px] font-black leading-[22px] text-white">
-                    +
+                {ticketType.reservedQuantity > 0 ? (
+                  <Text className="mt-1 text-[13px] font-bold text-[#9b5c18]">
+                    {ticketType.reservedQuantity} temporarily held
                   </Text>
-                </Pressable>
+                ) : null}
+              </View>
+              <View className="items-end">
+                <Text className="text-right text-[17px] font-black text-[#10231e]">
+                  {formatPrice(ticketType.priceCents, ticketType.currency)}
+                </Text>
+                <View className="mt-3 flex-row items-center gap-2.5">
+                  <Pressable
+                    accessibilityLabel={`Decrease ${ticketType.name} quantity`}
+                    accessibilityRole="button"
+                    disabled={!canDecrease}
+                    onPress={() =>
+                      updateTicketQuantity(ticketType.id, selectedQuantity - 1)
+                    }
+                    className={`h-[34px] w-[34px] items-center justify-center rounded-lg bg-[#1f6f5b] ${
+                      canDecrease ? "" : "opacity-35"
+                    }`}
+                  >
+                    <Text className="text-[20px] font-black leading-[22px] text-white">
+                      -
+                    </Text>
+                  </Pressable>
+                  <Text className="min-w-5 text-center text-[17px] font-black text-[#10231e]">
+                    {selectedQuantity}
+                  </Text>
+                  <Pressable
+                    accessibilityLabel={`Increase ${ticketType.name} quantity`}
+                    accessibilityRole="button"
+                    disabled={!canIncrease}
+                    onPress={() =>
+                      updateTicketQuantity(ticketType.id, selectedQuantity + 1)
+                    }
+                    className={`h-[34px] w-[34px] items-center justify-center rounded-lg bg-[#1f6f5b] ${
+                      canIncrease ? "" : "opacity-35"
+                    }`}
+                  >
+                    <Text className="text-[20px] font-black leading-[22px] text-white">
+                      +
+                    </Text>
+                  </Pressable>
+                </View>
               </View>
             </View>
-          </View>
-        ))}
+          );
+        })}
         <View className="mt-2 flex-row items-center justify-between rounded-lg bg-[#e7f3ef] p-4">
           <View>
             <Text className="text-xs font-black uppercase text-[#557169]">
@@ -268,12 +331,10 @@ function EventDetailContent({
           </View>
           <Pressable
             accessibilityRole="button"
-            disabled={isReserving || selectedItems.length === 0}
+            disabled={!canReserve}
             onPress={handleReserveTickets}
             className={`rounded-lg px-4 py-3 ${
-              isReserving || selectedItems.length === 0
-                ? "bg-[#9fb7af]"
-                : "bg-[#1f6f5b]"
+              canReserve ? "bg-[#1f6f5b]" : "bg-[#9fb7af]"
             }`}
           >
             <Text className="text-sm font-black text-white">
@@ -318,4 +379,12 @@ function formatTime(value: string) {
     hour: "numeric",
     minute: "2-digit",
   }).format(new Date(value));
+}
+
+function getReservationErrorCopy(error: unknown) {
+  if (error instanceof ReservationApiError && error.statusCode === 409) {
+    return "Those tickets were just taken or held by someone else. Availability has been refreshed, so adjust your selection and try again.";
+  }
+
+  return error instanceof Error ? error.message : "Unable to reserve tickets.";
 }
