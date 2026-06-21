@@ -1,5 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
-import { FlatList, Pressable, Text, View } from "react-native";
+import {
+  FlatList,
+  Pressable,
+  RefreshControl,
+  Text,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { EmptyState } from "../components/EmptyState";
 import { ErrorState } from "../components/ErrorState";
@@ -17,22 +23,36 @@ export function EventListScreen({
 }: EventListScreenProps) {
   const [events, setEvents] = useState<EventListItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const loadEvents = useCallback(async () => {
-    setIsLoading(true);
-    setErrorMessage(null);
+  const loadEvents = useCallback(
+    async (mode: "initial" | "refresh" = "initial") => {
+      if (mode === "refresh") {
+        setIsRefreshing(true);
+      } else {
+        setIsLoading(true);
+      }
+      setErrorMessage(null);
 
-    try {
-      setEvents(await getEvents());
-    } catch (error) {
-      setErrorMessage(
-        error instanceof Error ? error.message : "Unable to load events.",
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+      try {
+        setEvents(await getEvents());
+      } catch (error) {
+        setErrorMessage(
+          error instanceof Error ? error.message : "Unable to load events.",
+        );
+      } finally {
+        if (mode === "refresh") {
+          setIsRefreshing(false);
+        } else {
+          setIsLoading(false);
+        }
+      }
+    },
+    [],
+  );
+
+  const refreshEvents = useCallback(() => loadEvents("refresh"), [loadEvents]);
 
   useEffect(() => {
     void loadEvents();
@@ -80,6 +100,13 @@ export function EventListScreen({
             ItemSeparatorComponent={() => <View className="h-[14px]" />}
             keyExtractor={(event) => event.id}
             ListFooterComponent={() => <View className="h-7" />}
+            refreshControl={
+              <RefreshControl
+                refreshing={isRefreshing}
+                tintColor="#1f6f5b"
+                onRefresh={refreshEvents}
+              />
+            }
             renderItem={({ item }) => (
               <EventCard event={item} onPress={() => onSelectEvent(item.id)} />
             )}
