@@ -10,6 +10,7 @@ type ReservationDetailScreenProps = {
   event: EventDetail;
   onBackToEvent: () => void;
   onBackToEvents: () => void;
+  onContinueToPayment: () => void;
   reservation: Reservation;
 };
 
@@ -17,6 +18,7 @@ export function ReservationDetailScreen({
   event,
   onBackToEvent,
   onBackToEvents,
+  onContinueToPayment,
   reservation,
 }: ReservationDetailScreenProps) {
   const [isExpired, setIsExpired] = useState(
@@ -166,6 +168,7 @@ export function ReservationDetailScreen({
           <Pressable
             accessibilityRole="button"
             disabled={isExpired}
+            onPress={onContinueToPayment}
             className={`mt-4 rounded-lg px-4 py-3 ${
               isExpired ? "bg-[#9fb7af]" : "bg-[#1f6f5b]"
             }`}
