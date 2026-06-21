@@ -4,6 +4,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import type { EventDetail } from "../api/events";
 import type { Reservation } from "../api/reservations";
 import { CountdownTimer } from "../components/CountdownTimer";
+import { ReservationExpiredState } from "../components/ReservationExpiredState";
 
 type ReservationDetailScreenProps = {
   event: EventDetail;
@@ -107,14 +108,10 @@ export function ReservationDetailScreen({
 
           <View className="mt-4">
             {isExpired ? (
-              <View className="rounded-lg border border-[#f3cfb4] bg-[#fff8f2] p-4">
-                <Text className="text-base font-black text-[#4a2013]">
-                  This hold has expired
-                </Text>
-                <Text className="mt-1.5 text-sm leading-5 text-[#7f5542]">
-                  Select tickets again to create a fresh reservation.
-                </Text>
-              </View>
+              <ReservationExpiredState
+                description="This ticket hold is no longer active. Select tickets again to create a fresh reservation with current availability."
+                onAction={onBackToEvent}
+              />
             ) : (
               <CountdownTimer
                 expiresAt={new Date(reservation.expiresAt)}
