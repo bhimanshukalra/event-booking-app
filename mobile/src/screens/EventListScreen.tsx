@@ -9,6 +9,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { EmptyState, ErrorState, LoadingState } from "../components";
 import { type EventListItem, getEvents } from "../api/events";
+import { colors } from "../theme/colors";
 
 type EventListScreenProps = {
   bookingCount: number;
@@ -59,27 +60,27 @@ export function EventListScreen({
   }, [loadEvents]);
 
   return (
-    <SafeAreaView className="flex-1 bg-[#f5fbf8]">
+    <SafeAreaView className="flex-1 bg-app">
       <View className="flex-1 px-5">
         <View className="pb-[22px] pt-7">
           <View className="mb-5 flex-row justify-end">
             <Pressable
               accessibilityRole="button"
               onPress={onViewBookings}
-              className="rounded-lg border border-[#a8c7bd] px-[14px] py-2.5"
+              className="rounded-lg border border-border-muted px-[14px] py-2.5"
             >
-              <Text className="text-sm font-extrabold text-[#1f6f5b]">
+              <Text className="text-sm font-extrabold text-brand">
                 My bookings{bookingCount > 0 ? ` (${bookingCount})` : ""}
               </Text>
             </Pressable>
           </View>
-          <Text className="text-[13px] font-black uppercase text-[#1f6f5b]">
+          <Text className="text-[13px] font-black uppercase text-brand">
             Upcoming events
           </Text>
-          <Text className="mt-2 text-[34px] font-black leading-[39px] text-[#10231e]">
+          <Text className="mt-2 text-[34px] font-black leading-[39px] text-ink">
             Find your next seat
           </Text>
-          <Text className="mt-2.5 text-base leading-[23px] text-[#557169]">
+          <Text className="mt-2.5 text-base leading-[23px] text-muted">
             Browse live inventory from the booking platform foundation API.
           </Text>
         </View>
@@ -103,7 +104,7 @@ export function EventListScreen({
             refreshControl={
               <RefreshControl
                 refreshing={isRefreshing}
-                tintColor="#1f6f5b"
+                tintColor={colors.brand}
                 onRefresh={refreshEvents}
               />
             }
@@ -128,29 +129,29 @@ function EventCard({
     <Pressable
       accessibilityRole="button"
       onPress={onPress}
-      className="rounded-lg border border-[#d7e4df] bg-white p-[18px]"
+      className="rounded-lg border border-border-subtle bg-white p-[18px]"
     >
       <View className="flex-row items-center justify-between">
-        <Text className="text-xs font-black uppercase text-[#1f6f5b]">
+        <Text className="text-xs font-black uppercase text-brand">
           {event.category}
         </Text>
         <Text
           className={`overflow-hidden rounded-full px-2.5 py-[5px] text-xs font-extrabold ${
             event.availabilityStatus === "sold_out"
-              ? "bg-[#f4e1d6] text-[#7f3f24]"
-              : "bg-[#dff6ed] text-[#155443]"
+              ? "bg-sold-out-bg text-sold-out-text"
+              : "bg-success-soft text-success-strong"
           }`}
         >
           {event.availabilityStatus === "available" ? "Available" : "Sold out"}
         </Text>
       </View>
-      <Text className="mt-4 text-[21px] font-black leading-[27px] text-[#10231e]">
+      <Text className="mt-4 text-[21px] font-black leading-[27px] text-ink">
         {event.title}
       </Text>
-      <Text className="mt-2 text-sm leading-5 text-[#557169]">
+      <Text className="mt-2 text-sm leading-5 text-muted">
         {formatDate(event.startsAt)} - {event.venueName}, {event.city}
       </Text>
-      <Text className="mt-4 text-base font-extrabold text-[#10231e]">
+      <Text className="mt-4 text-base font-extrabold text-ink">
         {formatPrice(event)}
       </Text>
     </Pressable>

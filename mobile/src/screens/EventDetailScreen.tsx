@@ -45,15 +45,15 @@ export function EventDetailScreen({
   }, [loadEvent]);
 
   return (
-    <SafeAreaView className="flex-1 bg-[#f5fbf8]">
+    <SafeAreaView className="flex-1 bg-app">
       <ScrollView className="flex-1">
         <View className="px-5 pb-9 pt-5">
           <Pressable
             accessibilityRole="button"
             onPress={onBack}
-            className="mb-6 self-start rounded-lg border border-[#a8c7bd] px-[14px] py-2.5"
+            className="mb-6 self-start rounded-lg border border-border-muted px-[14px] py-2.5"
           >
-            <Text className="text-sm font-extrabold text-[#1f6f5b]">
+            <Text className="text-sm font-extrabold text-brand">
               Back to events
             </Text>
           </Pressable>
@@ -199,33 +199,33 @@ function EventDetailContent({
 
   return (
     <View>
-      <Text className="text-[13px] font-black uppercase text-[#1f6f5b]">
+      <Text className="text-[13px] font-black uppercase text-brand">
         {event.category}
       </Text>
-      <Text className="mt-2.5 text-[36px] font-black leading-[41px] text-[#10231e]">
+      <Text className="mt-2.5 text-[36px] font-black leading-[41px] text-ink">
         {event.title}
       </Text>
-      <Text className="mt-3 text-[15px] leading-[22px] text-[#557169]">
+      <Text className="mt-3 text-[15px] leading-[22px] text-muted">
         {formatDateTime(event.startsAt)} - {event.venue.name}
       </Text>
-      <Text className="mt-[18px] text-base leading-6 text-[#314d45]">
+      <Text className="mt-[18px] text-base leading-6 text-body">
         {event.description}
       </Text>
 
-      <View className="mt-6 rounded-lg bg-[#e7f3ef] p-[18px]">
-        <Text className="text-xs font-black uppercase text-[#557169]">
+      <View className="mt-6 rounded-lg bg-brand-soft p-[18px]">
+        <Text className="text-xs font-black uppercase text-muted">
           Venue
         </Text>
-        <Text className="mt-2 text-lg font-extrabold text-[#10231e]">
+        <Text className="mt-2 text-lg font-extrabold text-ink">
           {event.venue.name}
         </Text>
-        <Text className="mt-1.5 text-[15px] leading-[22px] text-[#557169]">
+        <Text className="mt-1.5 text-[15px] leading-[22px] text-muted">
           {event.venue.address}, {event.venue.city}, {event.venue.state}
         </Text>
       </View>
 
       <View className="mt-7">
-        <Text className="mb-[14px] text-[22px] font-black text-[#10231e]">
+        <Text className="mb-[14px] text-[22px] font-black text-ink">
           Tickets
         </Text>
         {event.ticketTypes.map((ticketType) => {
@@ -242,42 +242,42 @@ function EventDetailContent({
               key={ticketType.id}
               className={`mb-3 flex-row items-start justify-between rounded-lg border p-4 ${
                 isSoldOut
-                  ? "border-[#ead4d4] bg-[#fff7f7]"
-                  : "border-[#d7e4df] bg-white"
+                  ? "border-sold-out-border bg-sold-out-surface"
+                  : "border-border-subtle bg-white"
               }`}
             >
               <View className="flex-1 pr-[14px]">
                 <View className="flex-row flex-wrap items-center gap-2">
-                  <Text className="text-[17px] font-extrabold text-[#10231e]">
+                  <Text className="text-[17px] font-extrabold text-ink">
                     {ticketType.name}
                   </Text>
                   {isSoldOut ? (
-                    <Text className="rounded-md bg-[#f0dada] px-2 py-1 text-[11px] font-black uppercase text-[#8a1f1f]">
+                    <Text className="rounded-md bg-danger-soft px-2 py-1 text-[11px] font-black uppercase text-danger">
                       Sold out
                     </Text>
                   ) : null}
                 </View>
                 {ticketType.description ? (
-                  <Text className="mt-1.5 text-sm leading-5 text-[#557169]">
+                  <Text className="mt-1.5 text-sm leading-5 text-muted">
                     {ticketType.description}
                   </Text>
                 ) : null}
                 <Text
                   className={`mt-1.5 text-[13px] ${
-                    isSoldOut ? "font-bold text-[#8a1f1f]" : "text-[#6f8580]"
+                    isSoldOut ? "font-bold text-danger" : "text-secondary"
                   }`}
                 >
                   {ticketType.availableQuantity} available of{" "}
                   {ticketType.capacity} total
                 </Text>
                 {ticketType.reservedQuantity > 0 ? (
-                  <Text className="mt-1 text-[13px] font-bold text-[#9b5c18]">
+                  <Text className="mt-1 text-[13px] font-bold text-held">
                     {ticketType.reservedQuantity} temporarily held
                   </Text>
                 ) : null}
               </View>
               <View className="items-end">
-                <Text className="text-right text-[17px] font-black text-[#10231e]">
+                <Text className="text-right text-[17px] font-black text-ink">
                   {formatPrice(ticketType.priceCents, ticketType.currency)}
                 </Text>
                 <View className="mt-3 flex-row items-center gap-2.5">
@@ -288,7 +288,7 @@ function EventDetailContent({
                     onPress={() =>
                       updateTicketQuantity(ticketType.id, selectedQuantity - 1)
                     }
-                    className={`h-[34px] w-[34px] items-center justify-center rounded-lg bg-[#1f6f5b] ${
+                    className={`h-[34px] w-[34px] items-center justify-center rounded-lg bg-brand ${
                       canDecrease ? "" : "opacity-35"
                     }`}
                   >
@@ -296,7 +296,7 @@ function EventDetailContent({
                       -
                     </Text>
                   </Pressable>
-                  <Text className="min-w-5 text-center text-[17px] font-black text-[#10231e]">
+                  <Text className="min-w-5 text-center text-[17px] font-black text-ink">
                     {selectedQuantity}
                   </Text>
                   <Pressable
@@ -306,7 +306,7 @@ function EventDetailContent({
                     onPress={() =>
                       updateTicketQuantity(ticketType.id, selectedQuantity + 1)
                     }
-                    className={`h-[34px] w-[34px] items-center justify-center rounded-lg bg-[#1f6f5b] ${
+                    className={`h-[34px] w-[34px] items-center justify-center rounded-lg bg-brand ${
                       canIncrease ? "" : "opacity-35"
                     }`}
                   >
@@ -319,12 +319,12 @@ function EventDetailContent({
             </View>
           );
         })}
-        <View className="mt-2 flex-row items-center justify-between rounded-lg bg-[#e7f3ef] p-4">
+        <View className="mt-2 flex-row items-center justify-between rounded-lg bg-brand-soft p-4">
           <View>
-            <Text className="text-xs font-black uppercase text-[#557169]">
+            <Text className="text-xs font-black uppercase text-muted">
               Selected
             </Text>
-            <Text className="mt-1 text-base font-black text-[#10231e]">
+            <Text className="mt-1 text-base font-black text-ink">
               {selectedTicketCount} ticket{selectedTicketCount === 1 ? "" : "s"}{" "}
               - {formatPrice(selectedTotalCents, currency)}
             </Text>
@@ -334,7 +334,7 @@ function EventDetailContent({
             disabled={!canReserve}
             onPress={handleReserveTickets}
             className={`rounded-lg px-4 py-3 ${
-              canReserve ? "bg-[#1f6f5b]" : "bg-[#9fb7af]"
+              canReserve ? "bg-brand" : "bg-disabled"
             }`}
           >
             <Text className="text-sm font-black text-white">
@@ -343,7 +343,7 @@ function EventDetailContent({
           </Pressable>
         </View>
         {reservationError ? (
-          <Text className="mt-3 text-sm font-bold text-[#9b1c1c]">
+          <Text className="mt-3 text-sm font-bold text-error">
             {reservationError}
           </Text>
         ) : null}

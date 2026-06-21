@@ -1,4 +1,5 @@
 import { ActivityIndicator, Text, View } from "react-native";
+import { colors } from "../theme/colors";
 
 type LoadingStateProps = {
   label: string;
@@ -7,8 +8,8 @@ type LoadingStateProps = {
 export function LoadingState({ label }: LoadingStateProps) {
   return (
     <View className="items-center gap-[14px] py-10">
-      <ActivityIndicator color="#1f6f5b" size="large" />
-      <Text className="text-[15px] font-semibold text-[#557169]">{label}</Text>
+      <ActivityIndicator color={colors.brand} size="large" />
+      <Text className="text-[15px] font-semibold text-muted">{label}</Text>
     </View>
   );
 }

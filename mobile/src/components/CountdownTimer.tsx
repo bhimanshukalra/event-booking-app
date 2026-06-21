@@ -61,23 +61,23 @@ export function CountdownTimer({
   const progress = Math.max(0, Math.min(remaining / totalDuration, 1));
 
   return (
-    <View className="rounded-lg border border-[#cce0d9] bg-white p-4">
+    <View className="rounded-lg border border-timer-border bg-white p-4">
       <View className="flex-row items-center justify-between gap-4">
         <View className="flex-1">
-          <Text className="text-xs font-black uppercase text-[#557169]">
+          <Text className="text-xs font-black uppercase text-muted">
             {label}
           </Text>
-          <Text className="mt-1 text-[30px] font-black text-[#10231e]">
+          <Text className="mt-1 text-[30px] font-black text-ink">
             {formattedTime}
           </Text>
         </View>
-        <Text className="text-right text-xs font-bold text-[#557169]">
+        <Text className="text-right text-xs font-bold text-muted">
           Hold expires soon
         </Text>
       </View>
-      <View className="mt-3 h-2 overflow-hidden rounded-full bg-[#d7e4df]">
+      <View className="mt-3 h-2 overflow-hidden rounded-full bg-border-subtle">
         <View
-          className="h-2 rounded-full bg-[#1f6f5b]"
+          className="h-2 rounded-full bg-brand"
           style={{
             width: `${progress * 100}%`,
           }}

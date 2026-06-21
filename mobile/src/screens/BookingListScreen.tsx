@@ -22,25 +22,25 @@ export function BookingListScreen({
   onSelectBooking,
 }: BookingListScreenProps) {
   return (
-    <SafeAreaView className="flex-1 bg-[#f5fbf8]">
+    <SafeAreaView className="flex-1 bg-app">
       <View className="flex-1 px-5">
         <View className="pb-[22px] pt-7">
           <Pressable
             accessibilityRole="button"
             onPress={onBackToEvents}
-            className="mb-6 self-start rounded-lg border border-[#a8c7bd] px-[14px] py-2.5"
+            className="mb-6 self-start rounded-lg border border-border-muted px-[14px] py-2.5"
           >
-            <Text className="text-sm font-extrabold text-[#1f6f5b]">
+            <Text className="text-sm font-extrabold text-brand">
               Back to events
             </Text>
           </Pressable>
-          <Text className="text-[13px] font-black uppercase text-[#1f6f5b]">
+          <Text className="text-[13px] font-black uppercase text-brand">
             Bookings
           </Text>
-          <Text className="mt-2 text-[34px] font-black leading-[39px] text-[#10231e]">
+          <Text className="mt-2 text-[34px] font-black leading-[39px] text-ink">
             Your tickets
           </Text>
-          <Text className="mt-2.5 text-base leading-[23px] text-[#557169]">
+          <Text className="mt-2.5 text-base leading-[23px] text-muted">
             Confirmed demo bookings from this app session appear here.
           </Text>
         </View>
@@ -86,23 +86,23 @@ function BookingCard({
     <Pressable
       accessibilityRole="button"
       onPress={onPress}
-      className="rounded-lg border border-[#d7e4df] bg-white p-[18px]"
+      className="rounded-lg border border-border-subtle bg-white p-[18px]"
     >
       <View className="flex-row items-center justify-between gap-3">
-        <Text className="text-xs font-black uppercase text-[#1f6f5b]">
+        <Text className="text-xs font-black uppercase text-brand">
           Confirmed
         </Text>
-        <Text className="rounded-full bg-[#dff6ed] px-2.5 py-[5px] text-xs font-extrabold text-[#155443]">
+        <Text className="rounded-full bg-success-soft px-2.5 py-[5px] text-xs font-extrabold text-success-strong">
           {ticketCount} ticket{ticketCount === 1 ? "" : "s"}
         </Text>
       </View>
-      <Text className="mt-4 text-[21px] font-black leading-[27px] text-[#10231e]">
+      <Text className="mt-4 text-[21px] font-black leading-[27px] text-ink">
         {booking.event.title}
       </Text>
-      <Text className="mt-2 text-sm leading-5 text-[#557169]">
+      <Text className="mt-2 text-sm leading-5 text-muted">
         {formatDateTime(booking.event.startsAt)} - {booking.event.venue.name}
       </Text>
-      <Text className="mt-4 text-sm font-extrabold text-[#10231e]">
+      <Text className="mt-4 text-sm font-extrabold text-ink">
         Booked {formatDateTime(booking.confirmedAt)}
       </Text>
     </Pressable>

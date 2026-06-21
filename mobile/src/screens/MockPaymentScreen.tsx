@@ -87,33 +87,33 @@ export function MockPaymentScreen({
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-[#f5fbf8]">
+    <SafeAreaView className="flex-1 bg-app">
       <ScrollView className="flex-1">
         <View className="px-5 pb-9 pt-5">
           <Pressable
             accessibilityRole="button"
             onPress={onBackToReservation}
-            className="mb-6 self-start rounded-lg border border-[#a8c7bd] px-[14px] py-2.5"
+            className="mb-6 self-start rounded-lg border border-border-muted px-[14px] py-2.5"
           >
-            <Text className="text-sm font-extrabold text-[#1f6f5b]">
+            <Text className="text-sm font-extrabold text-brand">
               Back to reservation
             </Text>
           </Pressable>
 
-          <Text className="text-[13px] font-black uppercase text-[#1f6f5b]">
+          <Text className="text-[13px] font-black uppercase text-brand">
             Payment
           </Text>
-          <Text className="mt-2.5 text-[34px] font-black leading-[39px] text-[#10231e]">
+          <Text className="mt-2.5 text-[34px] font-black leading-[39px] text-ink">
             {event.title}
           </Text>
-          <Text className="mt-3 text-[15px] leading-[22px] text-[#557169]">
+          <Text className="mt-3 text-[15px] leading-[22px] text-muted">
             {formatDateTime(event.startsAt)} - {event.venue.name}
           </Text>
 
-          <View className="mt-6 rounded-lg bg-[#10231e] p-4">
+          <View className="mt-6 rounded-lg bg-ink p-4">
             <View className="flex-row items-center justify-between gap-4">
               <View>
-                <Text className="text-xs font-black uppercase text-[#a8c7bd]">
+                <Text className="text-xs font-black uppercase text-border-muted">
                   Amount due
                 </Text>
                 <Text className="mt-1 text-base font-black text-white">
@@ -142,24 +142,24 @@ export function MockPaymentScreen({
           </View>
 
           <View className="mt-7">
-            <Text className="mb-[14px] text-[22px] font-black text-[#10231e]">
+            <Text className="mb-[14px] text-[22px] font-black text-ink">
               Order
             </Text>
             {reservationItems.map((item) => (
               <View
                 key={item.id}
-                className="mb-3 rounded-lg border border-[#d7e4df] bg-white p-4"
+                className="mb-3 rounded-lg border border-border-subtle bg-white p-4"
               >
                 <View className="flex-row items-start justify-between gap-4">
                   <View className="flex-1">
-                    <Text className="text-[17px] font-extrabold text-[#10231e]">
+                    <Text className="text-[17px] font-extrabold text-ink">
                       {item.ticketTypeName}
                     </Text>
-                    <Text className="mt-1.5 text-[13px] text-[#6f8580]">
+                    <Text className="mt-1.5 text-[13px] text-secondary">
                       Quantity {item.quantity}
                     </Text>
                   </View>
-                  <Text className="text-right text-[16px] font-black text-[#10231e]">
+                  <Text className="text-right text-[16px] font-black text-ink">
                     {formatPrice(item.quantity * item.priceCents, item.currency)}
                   </Text>
                 </View>
@@ -175,7 +175,7 @@ export function MockPaymentScreen({
               disabled={!canPay}
               onPress={handlePayNow}
               className={`flex-1 rounded-lg px-4 py-3 ${
-                canPay ? "bg-[#1f6f5b]" : "bg-[#9fb7af]"
+                canPay ? "bg-brand" : "bg-disabled"
               }`}
             >
               <Text className="text-center text-sm font-black text-white">
@@ -193,7 +193,7 @@ export function MockPaymentScreen({
               disabled={!canPay}
               onPress={handleFailPayment}
               className={`rounded-lg px-4 py-3 ${
-                canPay ? "bg-[#10231e]" : "bg-[#9fb7af]"
+                canPay ? "bg-ink" : "bg-disabled"
               }`}
             >
               <Text className="text-center text-sm font-black text-white">
@@ -219,13 +219,13 @@ function PaymentStatusBanner({ status }: { status: PaymentStatus }) {
     <View
       className={`mt-4 rounded-lg border p-4 ${
         isSuccess
-          ? "border-[#bdd8ce] bg-[#e7f3ef]"
-          : "border-[#f3cfb4] bg-[#fff8f2]"
+          ? "border-success-border bg-brand-soft"
+          : "border-warning-border bg-warning-bg"
       }`}
     >
       <Text
         className={`text-base font-black ${
-          isSuccess ? "text-[#1f6f5b]" : "text-[#4a2013]"
+          isSuccess ? "text-brand" : "text-warning-title"
         }`}
       >
         {isProcessing
@@ -236,7 +236,7 @@ function PaymentStatusBanner({ status }: { status: PaymentStatus }) {
       </Text>
       <Text
         className={`mt-1.5 text-sm leading-5 ${
-          isSuccess ? "text-[#314d45]" : "text-[#7f5542]"
+          isSuccess ? "text-body" : "text-warning-text"
         }`}
       >
         {isProcessing
