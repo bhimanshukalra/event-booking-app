@@ -1,6 +1,10 @@
 import { useState } from "react";
 import type { EventDetail } from "../api/events";
 import type { Reservation } from "../api/reservations";
+import {
+  BookingListScreen,
+  type ConfirmedBooking,
+} from "../screens/BookingListScreen";
 import { EventDetailScreen } from "../screens/EventDetailScreen";
 import { EventListScreen } from "../screens/EventListScreen";
 import { MockPaymentScreen } from "../screens/MockPaymentScreen";
@@ -14,6 +18,7 @@ type ActiveReservation = {
 
 type ActiveView =
   | "events"
+  | "bookings"
   | "eventDetail"
   | "reservationDetail"
   | "payment"
@@ -23,14 +28,32 @@ export function AppNavigator() {
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [activeReservation, setActiveReservation] =
     useState<ActiveReservation | null>(null);
+  const [bookings, setBookings] = useState<ConfirmedBooking[]>([]);
   const [activeView, setActiveView] = useState<ActiveView>("events");
+
+  function addConfirmedBooking(booking: ConfirmedBooking) {
+    setBookings((current) => [
+      booking,
+      ...current.filter(
+        (candidate) =>
+          candidate.reservation.id !== booking.reservation.id,
+      ),
+    ]);
+  }
 
   if (activeReservation && activeView === "payment") {
     return (
       <MockPaymentScreen
         event={activeReservation.event}
         onBackToReservation={() => setActiveView("reservationDetail")}
-        onPaymentSucceeded={() => setActiveView("ticket")}
+        onPaymentSucceeded={() => {
+          addConfirmedBooking({
+            confirmedAt: new Date().toISOString(),
+            event: activeReservation.event,
+            reservation: activeReservation.reservation,
+          });
+          setActiveView("ticket");
+        }}
         onSelectTicketsAgain={() => {
           setSelectedEventId(activeReservation.event.id);
           setActiveReservation(null);
@@ -45,6 +68,9 @@ export function AppNavigator() {
     return (
       <TicketDetailScreen
         event={activeReservation.event}
+        onBackToBookings={
+          bookings.length > 0 ? () => setActiveView("bookings") : undefined
+        }
         onBackToEvent={() => {
           setSelectedEventId(activeReservation.event.id);
           setActiveReservation(null);
@@ -56,6 +82,22 @@ export function AppNavigator() {
           setActiveView("events");
         }}
         reservation={activeReservation.reservation}
+      />
+    );
+  }
+
+  if (activeView === "bookings") {
+    return (
+      <BookingListScreen
+        bookings={bookings}
+        onBackToEvents={() => setActiveView("events")}
+        onSelectBooking={(booking) => {
+          setActiveReservation({
+            event: booking.event,
+            reservation: booking.reservation,
+          });
+          setActiveView("ticket");
+        }}
       />
     );
   }
@@ -105,6 +147,7 @@ export function AppNavigator() {
         setSelectedEventId(eventId);
         setActiveView("eventDetail");
       }}
+      onViewBookings={() => setActiveView("bookings")}
     />
   );
 }

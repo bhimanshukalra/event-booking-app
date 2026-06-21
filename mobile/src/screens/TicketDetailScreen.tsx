@@ -5,6 +5,7 @@ import type { Reservation } from "../api/reservations";
 
 type TicketDetailScreenProps = {
   event: EventDetail;
+  onBackToBookings?: () => void;
   onBackToEvents: () => void;
   onBackToEvent: () => void;
   reservation: Reservation;
@@ -12,6 +13,7 @@ type TicketDetailScreenProps = {
 
 export function TicketDetailScreen({
   event,
+  onBackToBookings,
   onBackToEvent,
   onBackToEvents,
   reservation,
@@ -45,6 +47,17 @@ export function TicketDetailScreen({
       <ScrollView className="flex-1">
         <View className="px-5 pb-9 pt-5">
           <View className="mb-6 flex-row flex-wrap gap-3">
+            {onBackToBookings ? (
+              <Pressable
+                accessibilityRole="button"
+                onPress={onBackToBookings}
+                className="rounded-lg border border-[#a8c7bd] px-[14px] py-2.5"
+              >
+                <Text className="text-sm font-extrabold text-[#1f6f5b]">
+                  Bookings
+                </Text>
+              </Pressable>
+            ) : null}
             <Pressable
               accessibilityRole="button"
               onPress={onBackToEvent}

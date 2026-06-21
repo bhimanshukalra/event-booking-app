@@ -8,9 +8,13 @@ import { type EventListItem, getEvents } from "../api/events";
 
 type EventListScreenProps = {
   onSelectEvent: (eventId: string) => void;
+  onViewBookings: () => void;
 };
 
-export function EventListScreen({ onSelectEvent }: EventListScreenProps) {
+export function EventListScreen({
+  onSelectEvent,
+  onViewBookings,
+}: EventListScreenProps) {
   const [events, setEvents] = useState<EventListItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -38,6 +42,17 @@ export function EventListScreen({ onSelectEvent }: EventListScreenProps) {
     <SafeAreaView className="flex-1 bg-[#f5fbf8]">
       <View className="flex-1 px-5">
         <View className="pb-[22px] pt-7">
+          <View className="mb-5 flex-row justify-end">
+            <Pressable
+              accessibilityRole="button"
+              onPress={onViewBookings}
+              className="rounded-lg border border-[#a8c7bd] px-[14px] py-2.5"
+            >
+              <Text className="text-sm font-extrabold text-[#1f6f5b]">
+                My bookings
+              </Text>
+            </Pressable>
+          </View>
           <Text className="text-[13px] font-black uppercase text-[#1f6f5b]">
             Upcoming events
           </Text>
