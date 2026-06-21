@@ -7,8 +7,7 @@ import {
   type Reservation,
   ReservationApiError,
 } from "../api/reservations";
-import { ErrorState } from "../components/ErrorState";
-import { LoadingState } from "../components/LoadingState";
+import { ErrorState, LoadingState } from "../components";
 
 type EventDetailScreenProps = {
   eventId: string;

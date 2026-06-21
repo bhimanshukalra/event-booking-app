@@ -7,9 +7,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { EmptyState } from "../components/EmptyState";
-import { ErrorState } from "../components/ErrorState";
-import { LoadingState } from "../components/LoadingState";
+import { EmptyState, ErrorState, LoadingState } from "../components";
 import { type EventListItem, getEvents } from "../api/events";
 
 type EventListScreenProps = {

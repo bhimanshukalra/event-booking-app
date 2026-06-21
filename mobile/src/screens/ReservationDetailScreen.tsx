@@ -3,8 +3,7 @@ import { Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import type { EventDetail } from "../api/events";
 import type { Reservation } from "../api/reservations";
-import { CountdownTimer } from "../components/CountdownTimer";
-import { ReservationExpiredState } from "../components/ReservationExpiredState";
+import { CountdownTimer, ReservationExpiredState } from "../components";
 
 type ReservationDetailScreenProps = {
   event: EventDetail;

@@ -2,7 +2,7 @@ import { FlatList, Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import type { EventDetail } from "../api/events";
 import type { Reservation } from "../api/reservations";
-import { EmptyState } from "../components/EmptyState";
+import { EmptyState } from "../components";
 
 export type ConfirmedBooking = {
   confirmedAt: string;
