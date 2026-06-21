@@ -1,7 +1,9 @@
+import { useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import type { EventDetail } from "../api/events";
 import type { Reservation } from "../api/reservations";
+import { CountdownTimer } from "../components/CountdownTimer";
 
 type ReservationDetailScreenProps = {
   event: EventDetail;
@@ -16,6 +18,9 @@ export function ReservationDetailScreen({
   onBackToEvents,
   reservation,
 }: ReservationDetailScreenProps) {
+  const [isExpired, setIsExpired] = useState(
+    new Date(reservation.expiresAt).getTime() <= Date.now(),
+  );
   const reservationItems = reservation.items.map((item) => {
     const ticketType = event.ticketTypes.find(
       (candidate) => candidate.id === item.ticketTypeId,
@@ -80,7 +85,7 @@ export function ReservationDetailScreen({
                   Status
                 </Text>
                 <Text className="mt-2 text-lg font-extrabold capitalize text-[#10231e]">
-                  {reservation.status}
+                  {isExpired ? "expired" : reservation.status}
                 </Text>
               </View>
               <View className="rounded-md bg-white px-3 py-2">
@@ -98,6 +103,25 @@ export function ReservationDetailScreen({
             <Text className="mt-1 text-sm font-bold text-[#314d45]">
               {reservation.id}
             </Text>
+          </View>
+
+          <View className="mt-4">
+            {isExpired ? (
+              <View className="rounded-lg border border-[#f3cfb4] bg-[#fff8f2] p-4">
+                <Text className="text-base font-black text-[#4a2013]">
+                  This hold has expired
+                </Text>
+                <Text className="mt-1.5 text-sm leading-5 text-[#7f5542]">
+                  Select tickets again to create a fresh reservation.
+                </Text>
+              </View>
+            ) : (
+              <CountdownTimer
+                expiresAt={new Date(reservation.expiresAt)}
+                label="Time remaining"
+                onExpire={() => setIsExpired(true)}
+              />
+            )}
           </View>
 
           <View className="mt-7">
@@ -141,6 +165,18 @@ export function ReservationDetailScreen({
               </Text>
             </View>
           </View>
+
+          <Pressable
+            accessibilityRole="button"
+            disabled={isExpired}
+            className={`mt-4 rounded-lg px-4 py-3 ${
+              isExpired ? "bg-[#9fb7af]" : "bg-[#1f6f5b]"
+            }`}
+          >
+            <Text className="text-center text-sm font-black text-white">
+              Continue to payment
+            </Text>
+          </Pressable>
         </View>
       </ScrollView>
     </SafeAreaView>
