@@ -1,6 +1,10 @@
 import { ReservationStatus } from "../../generated/prisma/enums";
 import { prisma } from "../../config/prisma";
 import type { Prisma } from "../../generated/prisma/client";
+import {
+  readTicketTypeAvailabilityCache,
+  writeTicketTypeAvailabilityCache,
+} from "./inventory-cache";
 
 type TicketTypeCapacity = {
   id: string;
@@ -21,10 +25,33 @@ export async function getTicketTypeAvailability(
   now = new Date(),
   client: PrismaReader = prisma,
 ) {
-  const ticketTypeIds = ticketTypes.map((ticketType) => ticketType.id);
+  let ticketTypesToQuery = ticketTypes;
+  const shouldUseCache = client === prisma;
+  const cachedAvailabilityByTicketTypeId = new Map<
+    string,
+    TicketTypeAvailability
+  >();
+
+  if (shouldUseCache) {
+    const cacheResult = await readTicketTypeAvailabilityCache(ticketTypes);
+
+    ticketTypesToQuery = cacheResult.missingTicketTypes;
+    for (const [
+      ticketTypeId,
+      cachedAvailability,
+    ] of cacheResult.cachedAvailabilityByTicketTypeId) {
+      cachedAvailabilityByTicketTypeId.set(ticketTypeId, cachedAvailability);
+    }
+  }
+
+  const ticketTypeIds = ticketTypesToQuery.map((ticketType) => ticketType.id);
+
+  if (ticketTypes.length === 0) {
+    return cachedAvailabilityByTicketTypeId;
+  }
 
   if (ticketTypeIds.length === 0) {
-    return new Map<string, TicketTypeAvailability>();
+    return cachedAvailabilityByTicketTypeId;
   }
 
   const activeReservationCounts = await client.reservationItem.groupBy({
@@ -73,8 +100,8 @@ export async function getTicketTypeAvailability(
     ]),
   );
 
-  return new Map(
-    ticketTypes.map((ticketType) => {
+  const queriedAvailabilityByTicketTypeId = new Map(
+    ticketTypesToQuery.map((ticketType) => {
       const reservedQuantity =
         reservedQuantityByTicketTypeId.get(ticketType.id) ?? 0;
       const confirmedSoldQuantity =
@@ -95,4 +122,13 @@ export async function getTicketTypeAvailability(
       ];
     }),
   );
+
+  if (shouldUseCache) {
+    await writeTicketTypeAvailabilityCache(queriedAvailabilityByTicketTypeId);
+  }
+
+  return new Map([
+    ...cachedAvailabilityByTicketTypeId,
+    ...queriedAvailabilityByTicketTypeId,
+  ]);
 }

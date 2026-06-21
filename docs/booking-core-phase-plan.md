@@ -245,7 +245,15 @@ Redis behavior:
 - [ ] TTL key mirrors reservation expiry.
 - [ ] Duplicate request guard prevents rapid repeat reservation attempts.
 - [ ] Redis failures are logged but do not allow overselling.
-- [ ] Cached inventory is optional and invalidated after reservation changes.
+- [x] Cached inventory is optional and invalidated after reservation changes.
+
+Inventory cache rules:
+
+- Cache keys are per ticket type: `inventory:ticket-type:<ticket_type_id>`.
+- Cached counts are used only for read-side event availability responses, never for reservation correctness checks inside PostgreSQL transactions.
+- Reservation creation invalidates every affected ticket type key after the database transaction commits.
+- Cache entries use a short TTL so expired holds age out even if no explicit expiry worker has invalidated the key yet.
+- Redis cache read, write, or invalidation failures must fall back to PostgreSQL-backed behavior without weakening inventory correctness.
 
 Exit criteria:
 

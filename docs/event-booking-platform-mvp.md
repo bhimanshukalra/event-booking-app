@@ -88,7 +88,7 @@ Deliverables:
 - [x] Redis integration for production-minded reservation support
 - [x] Redis TTL or sorted-set helper for reservation expiry tracking
 - [x] Redis-backed short-lived duplicate request guard for reservation attempts
-- [ ] Optional Redis inventory count cache with clear invalidation rules
+- [x] Optional Redis inventory count cache with clear invalidation rules
 - [ ] Optional Redis rate limit for reservation endpoints
 - [x] Conflict response when requested quantity is no longer available
 - [ ] Reservation detail API
@@ -105,6 +105,13 @@ Exit criteria:
 - [x] Retried reservation requests do not create duplicate holds.
 - [ ] Redis support improves operational behavior without weakening PostgreSQL correctness.
 - [ ] Reservation actions are traceable through audit logs.
+
+Inventory cache invalidation rules:
+
+- Redis stores read-side ticket type availability at `inventory:ticket-type:<ticket_type_id>`.
+- Reservation creation invalidates affected ticket type keys after the PostgreSQL transaction commits.
+- Reservation creation and future payment/booking correctness checks must recalculate availability from PostgreSQL inside the transaction instead of trusting Redis.
+- Cache entries are short-lived so expiry-sensitive pending holds cannot remain stale for long if no explicit expiry worker clears them first.
 
 ## Phase 3: Seat Layout And Showtimes
 

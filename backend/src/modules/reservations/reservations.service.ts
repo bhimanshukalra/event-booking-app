@@ -2,6 +2,7 @@ import { EventStatus, ReservationStatus } from "../../generated/prisma/enums";
 import { prisma } from "../../config/prisma";
 import { Prisma } from "../../generated/prisma/client";
 import { HttpError } from "../../shared/errors/http-error";
+import { invalidateTicketTypeAvailabilityCache } from "../events/inventory-cache";
 import { getTicketTypeAvailability } from "../events/availability.service";
 import { trackReservationExpiry } from "./reservation-expiry-tracker";
 import {
@@ -205,6 +206,10 @@ export async function createReservation(
 
     trackReservationExpiry(reservation).catch((error) => {
       console.error("Failed to track reservation expiry in Redis", error);
+    });
+
+    invalidateTicketTypeAvailabilityCache(ticketTypeIds).catch((error) => {
+      console.error("Failed to invalidate Redis inventory cache", error);
     });
 
     return {
