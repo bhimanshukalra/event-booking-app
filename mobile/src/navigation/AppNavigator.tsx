@@ -5,13 +5,19 @@ import { EventDetailScreen } from "../screens/EventDetailScreen";
 import { EventListScreen } from "../screens/EventListScreen";
 import { MockPaymentScreen } from "../screens/MockPaymentScreen";
 import { ReservationDetailScreen } from "../screens/ReservationDetailScreen";
+import { TicketDetailScreen } from "../screens/TicketDetailScreen";
 
 type ActiveReservation = {
   event: EventDetail;
   reservation: Reservation;
 };
 
-type ActiveView = "events" | "eventDetail" | "reservationDetail" | "payment";
+type ActiveView =
+  | "events"
+  | "eventDetail"
+  | "reservationDetail"
+  | "payment"
+  | "ticket";
 
 export function AppNavigator() {
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
@@ -24,10 +30,30 @@ export function AppNavigator() {
       <MockPaymentScreen
         event={activeReservation.event}
         onBackToReservation={() => setActiveView("reservationDetail")}
+        onPaymentSucceeded={() => setActiveView("ticket")}
         onSelectTicketsAgain={() => {
           setSelectedEventId(activeReservation.event.id);
           setActiveReservation(null);
           setActiveView("eventDetail");
+        }}
+        reservation={activeReservation.reservation}
+      />
+    );
+  }
+
+  if (activeReservation && activeView === "ticket") {
+    return (
+      <TicketDetailScreen
+        event={activeReservation.event}
+        onBackToEvent={() => {
+          setSelectedEventId(activeReservation.event.id);
+          setActiveReservation(null);
+          setActiveView("eventDetail");
+        }}
+        onBackToEvents={() => {
+          setSelectedEventId(null);
+          setActiveReservation(null);
+          setActiveView("events");
         }}
         reservation={activeReservation.reservation}
       />

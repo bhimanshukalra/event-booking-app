@@ -11,6 +11,7 @@ type PaymentStatus = "ready" | "processing" | "succeeded" | "failed";
 type MockPaymentScreenProps = {
   event: EventDetail;
   onBackToReservation: () => void;
+  onPaymentSucceeded: () => void;
   onSelectTicketsAgain: () => void;
   reservation: Reservation;
 };
@@ -18,6 +19,7 @@ type MockPaymentScreenProps = {
 export function MockPaymentScreen({
   event,
   onBackToReservation,
+  onPaymentSucceeded,
   onSelectTicketsAgain,
   reservation,
 }: MockPaymentScreenProps) {
@@ -72,6 +74,7 @@ export function MockPaymentScreen({
 
     paymentTimeoutRef.current = setTimeout(() => {
       setPaymentStatus("succeeded");
+      onPaymentSucceeded();
       paymentTimeoutRef.current = null;
     }, 800);
   }
