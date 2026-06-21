@@ -4,6 +4,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { type EventDetail, getEvent } from "../api/events";
 import {
   createReservation,
+  type Reservation,
   ReservationApiError,
 } from "../api/reservations";
 import { ErrorState } from "../components/ErrorState";
@@ -12,9 +13,14 @@ import { LoadingState } from "../components/LoadingState";
 type EventDetailScreenProps = {
   eventId: string;
   onBack: () => void;
+  onReservationCreated: (reservation: Reservation, event: EventDetail) => void;
 };
 
-export function EventDetailScreen({ eventId, onBack }: EventDetailScreenProps) {
+export function EventDetailScreen({
+  eventId,
+  onBack,
+  onReservationCreated,
+}: EventDetailScreenProps) {
   const [event, setEvent] = useState<EventDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -60,6 +66,7 @@ export function EventDetailScreen({ eventId, onBack }: EventDetailScreenProps) {
           ) : event ? (
             <EventDetailContent
               event={event}
+              onReservationCreated={onReservationCreated}
               onReservationSettled={loadEvent}
             />
           ) : null}
@@ -71,18 +78,17 @@ export function EventDetailScreen({ eventId, onBack }: EventDetailScreenProps) {
 
 function EventDetailContent({
   event,
+  onReservationCreated,
   onReservationSettled,
 }: {
   event: EventDetail;
+  onReservationCreated: (reservation: Reservation, event: EventDetail) => void;
   onReservationSettled: () => Promise<void>;
 }) {
   const [selectedQuantities, setSelectedQuantities] = useState<
     Record<string, number>
   >({});
   const [isReserving, setIsReserving] = useState(false);
-  const [reservationMessage, setReservationMessage] = useState<string | null>(
-    null,
-  );
   const [reservationError, setReservationError] = useState<string | null>(null);
 
   const selectedItems = event.ticketTypes
@@ -153,7 +159,6 @@ function EventDetailContent({
     );
 
     setReservationError(null);
-    setReservationMessage(null);
     setSelectedQuantities((current) => {
       const next = { ...current };
 
@@ -179,21 +184,17 @@ function EventDetailContent({
 
     setIsReserving(true);
     setReservationError(null);
-    setReservationMessage(null);
 
     try {
       const reservation = await createReservation(selectedItems);
       setSelectedQuantities({});
-      setReservationMessage(
-        `Reserved ${selectedTicketCount} ticket${
-          selectedTicketCount === 1 ? "" : "s"
-        } until ${formatTime(reservation.expiresAt)}.`,
-      );
+      onReservationCreated(reservation, event);
+      void onReservationSettled();
     } catch (error) {
       setReservationError(getReservationErrorCopy(error));
+      await onReservationSettled().catch(() => undefined);
     } finally {
       setIsReserving(false);
-      await onReservationSettled();
     }
   }
 
@@ -342,11 +343,6 @@ function EventDetailContent({
             </Text>
           </Pressable>
         </View>
-        {reservationMessage ? (
-          <Text className="mt-3 text-sm font-extrabold text-[#1f6f5b]">
-            {reservationMessage}
-          </Text>
-        ) : null}
         {reservationError ? (
           <Text className="mt-3 text-sm font-bold text-[#9b1c1c]">
             {reservationError}
@@ -372,13 +368,6 @@ function formatPrice(priceCents: number, currency: string) {
     currency,
     style: "currency",
   }).format(priceCents / 100);
-}
-
-function formatTime(value: string) {
-  return new Intl.DateTimeFormat("en-US", {
-    hour: "numeric",
-    minute: "2-digit",
-  }).format(new Date(value));
 }
 
 function getReservationErrorCopy(error: unknown) {
