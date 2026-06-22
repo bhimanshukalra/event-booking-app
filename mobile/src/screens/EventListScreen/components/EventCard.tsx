@@ -1,5 +1,6 @@
 import { Pressable, Text, View } from "react-native";
 import { type EventListItem } from "../../../api/events";
+import { cn } from "../../../utils";
 
 type EventCardProps = {
   event: EventListItem;
@@ -18,11 +19,12 @@ export function EventCard({ event, onPress }: EventCardProps) {
           {event.category}
         </Text>
         <Text
-          className={`overflow-hidden rounded-full px-2.5 py-[5px] text-xs font-extrabold ${
+          className={cn(
+            "overflow-hidden rounded-full px-2.5 py-[5px] text-xs font-extrabold",
             event.availabilityStatus === "sold_out"
               ? "bg-sold-out-bg text-sold-out-text"
-              : "bg-success-soft text-success-strong"
-          }`}
+              : "bg-success-soft text-success-strong",
+          )}
         >
           {event.availabilityStatus === "available" ? "Available" : "Sold out"}
         </Text>

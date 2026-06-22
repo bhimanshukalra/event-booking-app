@@ -8,6 +8,7 @@ import {
   ReservationApiError,
 } from "../api/reservations";
 import { ErrorState, LoadingState } from "../components";
+import { cn } from "../utils";
 
 type EventDetailScreenProps = {
   eventId: string;
@@ -240,11 +241,12 @@ function EventDetailContent({
           return (
             <View
               key={ticketType.id}
-              className={`mb-3 flex-row items-start justify-between rounded-lg border p-4 ${
+              className={cn(
+                "mb-3 flex-row items-start justify-between rounded-lg border p-4",
                 isSoldOut
                   ? "border-sold-out-border bg-sold-out-surface"
-                  : "border-border-subtle bg-white"
-              }`}
+                  : "border-border-subtle bg-white",
+              )}
             >
               <View className="flex-1 pr-[14px]">
                 <View className="flex-row flex-wrap items-center gap-2">
@@ -263,9 +265,10 @@ function EventDetailContent({
                   </Text>
                 ) : null}
                 <Text
-                  className={`mt-1.5 text-[13px] ${
-                    isSoldOut ? "font-bold text-danger" : "text-secondary"
-                  }`}
+                  className={cn(
+                    "mt-1.5 text-[13px]",
+                    isSoldOut ? "font-bold text-danger" : "text-secondary",
+                  )}
                 >
                   {ticketType.availableQuantity} available of{" "}
                   {ticketType.capacity} total
@@ -288,9 +291,10 @@ function EventDetailContent({
                     onPress={() =>
                       updateTicketQuantity(ticketType.id, selectedQuantity - 1)
                     }
-                    className={`h-[34px] w-[34px] items-center justify-center rounded-lg bg-brand ${
-                      canDecrease ? "" : "opacity-35"
-                    }`}
+                    className={cn(
+                      "h-[34px] w-[34px] items-center justify-center rounded-lg bg-brand",
+                      !canDecrease && "opacity-35",
+                    )}
                   >
                     <Text className="text-[20px] font-black leading-[22px] text-white">
                       -
@@ -306,9 +310,10 @@ function EventDetailContent({
                     onPress={() =>
                       updateTicketQuantity(ticketType.id, selectedQuantity + 1)
                     }
-                    className={`h-[34px] w-[34px] items-center justify-center rounded-lg bg-brand ${
-                      canIncrease ? "" : "opacity-35"
-                    }`}
+                    className={cn(
+                      "h-[34px] w-[34px] items-center justify-center rounded-lg bg-brand",
+                      !canIncrease && "opacity-35",
+                    )}
                   >
                     <Text className="text-[20px] font-black leading-[22px] text-white">
                       +
@@ -333,9 +338,10 @@ function EventDetailContent({
             accessibilityRole="button"
             disabled={!canReserve}
             onPress={handleReserveTickets}
-            className={`rounded-lg px-4 py-3 ${
-              canReserve ? "bg-brand" : "bg-disabled"
-            }`}
+            className={cn(
+              "rounded-lg px-4 py-3",
+              canReserve ? "bg-brand" : "bg-disabled",
+            )}
           >
             <Text className="text-sm font-black text-white">
               {isReserving ? "Reserving..." : "Reserve tickets"}

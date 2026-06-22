@@ -4,6 +4,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import type { EventDetail } from "../api/events";
 import type { Reservation } from "../api/reservations";
 import { CountdownTimer, ReservationExpiredState } from "../components";
+import { cn } from "../utils";
 
 type PaymentStatus = "ready" | "processing" | "succeeded" | "failed";
 
@@ -174,9 +175,10 @@ export function MockPaymentScreen({
               accessibilityRole="button"
               disabled={!canPay}
               onPress={handlePayNow}
-              className={`flex-1 rounded-lg px-4 py-3 ${
-                canPay ? "bg-brand" : "bg-disabled"
-              }`}
+              className={cn(
+                "flex-1 rounded-lg px-4 py-3",
+                canPay ? "bg-brand" : "bg-disabled",
+              )}
             >
               <Text className="text-center text-sm font-black text-white">
                 {paymentStatus === "processing"
@@ -192,9 +194,10 @@ export function MockPaymentScreen({
               accessibilityRole="button"
               disabled={!canPay}
               onPress={handleFailPayment}
-              className={`rounded-lg px-4 py-3 ${
-                canPay ? "bg-ink" : "bg-disabled"
-              }`}
+              className={cn(
+                "rounded-lg px-4 py-3",
+                canPay ? "bg-ink" : "bg-disabled",
+              )}
             >
               <Text className="text-center text-sm font-black text-white">
                 Decline
@@ -217,16 +220,18 @@ function PaymentStatusBanner({ status }: { status: PaymentStatus }) {
 
   return (
     <View
-      className={`mt-4 rounded-lg border p-4 ${
+      className={cn(
+        "mt-4 rounded-lg border p-4",
         isSuccess
           ? "border-success-border bg-brand-soft"
-          : "border-warning-border bg-warning-bg"
-      }`}
+          : "border-warning-border bg-warning-bg",
+      )}
     >
       <Text
-        className={`text-base font-black ${
-          isSuccess ? "text-brand" : "text-warning-title"
-        }`}
+        className={cn(
+          "text-base font-black",
+          isSuccess ? "text-brand" : "text-warning-title",
+        )}
       >
         {isProcessing
           ? "Payment processing"
@@ -235,9 +240,10 @@ function PaymentStatusBanner({ status }: { status: PaymentStatus }) {
             : "Payment failed"}
       </Text>
       <Text
-        className={`mt-1.5 text-sm leading-5 ${
-          isSuccess ? "text-body" : "text-warning-text"
-        }`}
+        className={cn(
+          "mt-1.5 text-sm leading-5",
+          isSuccess ? "text-body" : "text-warning-text",
+        )}
       >
         {isProcessing
           ? "Keep this screen open while the demo payment completes."

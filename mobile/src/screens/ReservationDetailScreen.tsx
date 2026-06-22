@@ -4,6 +4,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import type { EventDetail } from "../api/events";
 import type { Reservation } from "../api/reservations";
 import { CountdownTimer, ReservationExpiredState } from "../components";
+import { cn } from "../utils";
 
 type ReservationDetailScreenProps = {
   event: EventDetail;
@@ -168,9 +169,10 @@ export function ReservationDetailScreen({
             accessibilityRole="button"
             disabled={isExpired}
             onPress={onContinueToPayment}
-            className={`mt-4 rounded-lg px-4 py-3 ${
-              isExpired ? "bg-disabled" : "bg-brand"
-            }`}
+            className={cn(
+              "mt-4 rounded-lg px-4 py-3",
+              isExpired ? "bg-disabled" : "bg-brand",
+            )}
           >
             <Text className="text-center text-sm font-black text-white">
               Continue to payment
